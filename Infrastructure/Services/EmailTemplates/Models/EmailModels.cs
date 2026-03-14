@@ -11,7 +11,7 @@ namespace Infrastructure.Services.EmailTemplates.Models
         protected readonly LocalizationSettings _localizationSettings;
 
         public string Username { get; set; } = string.Empty;
-        public string CompanyName { get; set; } = string.Empty;  //"Hexagonal Architecture Template";
+        public string CompanyName { get; set; } = string.Empty;  //"CommerceApiDotNet";
         public string SupportEmail { get; set; } = string.Empty; //"support@company.com";
         
         public DateTime CurrentDate { get; set; }

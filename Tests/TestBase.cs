@@ -28,23 +28,18 @@ public abstract class TestBase : IDisposable
         Context = new AppDbContext(options);
 
         // Configure AutoMapper
-        var mapperConfig = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile<AutoMapperProfile>();
-        });
-        Mapper = mapperConfig.CreateMapper();
-
-        // Configure Logger
-        var serviceProvider = new ServiceCollection()
+        var services = new ServiceCollection()
+            .AddAutoMapper(typeof(AutoMapperProfile))
             .AddLogging(builder => builder.AddConsole())
             .BuildServiceProvider();
-        
-        Logger = serviceProvider.GetRequiredService<ILogger<TestBase>>();
+
+        Mapper = services.GetRequiredService<IMapper>();
+        Logger = services.GetRequiredService<ILogger<TestBase>>();
 
         // Configure Repositories
-        var userLogger = serviceProvider.GetRequiredService<ILogger<UserRepository>>();
-        var refreshTokenLogger = serviceProvider.GetRequiredService<ILogger<RefreshTokenRepository>>();
-        var passwordResetTokenLogger = serviceProvider.GetRequiredService<ILogger<PasswordResetTokenRepository>>();
+        var userLogger = services.GetRequiredService<ILogger<UserRepository>>();
+        var refreshTokenLogger = services.GetRequiredService<ILogger<RefreshTokenRepository>>();
+        var passwordResetTokenLogger = services.GetRequiredService<ILogger<PasswordResetTokenRepository>>();
 
         UserRepository = new UserRepository(Context, Mapper, userLogger);
         RefreshTokenRepository = new RefreshTokenRepository(Context, refreshTokenLogger);

@@ -69,7 +69,7 @@ public class Program
 
             builder.Host.UseSerilog(Log.Logger);  // Usar Serilog como logger de ASP.NET Core
 
-            Log.Information("Starting Hexagonal Architecture Template application");
+            Log.Information("Starting CommerceApiDotNet application");
             Log.Information("WebApplication.CreateBuilder completed successfully");
 
             //// CORS Configuration OLD (Version permisiva)
@@ -323,7 +323,7 @@ public class Program
             app.UseSwagger();
             app.UseSwaggerUI(options =>
             {
-                options.SwaggerEndpoint("/swagger/v1/swagger.json", "Hexagonal Architecture Template API v1");
+                options.SwaggerEndpoint("/swagger/v1/swagger.json", "CommerceApiDotNet API v1");
                 options.RoutePrefix = "swagger";
             });
             Log.Information("Swagger UI configured at /swagger endpoint");

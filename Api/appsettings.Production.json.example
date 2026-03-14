@@ -7,7 +7,7 @@
     }
   },
 
-  // Serilog optimizado para producción
+  // Serilog optimizado para producciï¿½n
   "Serilog": {
     "MinimumLevel": {
       "Default": "Warning",
@@ -36,7 +36,7 @@
     ]
   },
 
-  // CORS restrictivo en producción
+  // CORS restrictivo en producciï¿½n
   "CorsPolicies": [
     {
       "Origin": "https://tusitio.com",
@@ -61,19 +61,19 @@
     "SmtpUsername": "tu-email@gmail.com",
     "SmtpPassword": "tu-app-password",
     "FromEmail": "tu-email@gmail.com",
-    "FromName": "Hexagonal Architecture Template",
+    "FromName": "CommerceApiDotNet",
     "EnableSsl": "true",
-    "CompanyName": "Company Hexagonal Architecture Template Company",
+    "CompanyName": "Company CommerceApiDotNet",
     "SupportEmail": "support@company.com",
 
-    // CONFIGURACIÓN: Rutas de plantillas (En producción, solo usa la ruta publicada)
+    // CONFIGURACIï¿½N: Rutas de plantillas (En producciï¿½n, solo usa la ruta publicada)
     "TemplatesPath": "EmailTemplates"
   },
 
   "SwaggerDoc": {
     "Title": "Services Template WEB API",
     "Version": "v1",
-    "Description": "WEB Service - Template HexagonalArchitecture - Production Environment"
+    "Description": "WEB Service - CommerceApiDotNet - Production Environment"
   },
 
   "GeneralConfigParams": {

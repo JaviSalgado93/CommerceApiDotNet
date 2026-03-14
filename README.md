@@ -1,6 +1,6 @@
-﻿# 🏗️ Hexagonal Architecture Template
+﻿# 🏗️ Commerce API .NET
 
-Una **plantilla profesional de API REST** desarrollada con **.NET 8** que implementa **Arquitectura Hexagonal (Puertos y Adaptadores)** con seguridad de nivel empresarial, pruebas unitarias completas y buenas prácticas de desarrollo.
+Una **API REST profesional para e-commerce** desarrollada con **.NET 8** que implementa **Arquitectura Hexagonal (Puertos y Adaptadores)** con seguridad de nivel empresarial, pruebas unitarias completas y buenas prácticas de desarrollo.
 
 ---
 
@@ -120,7 +120,7 @@ Tests.csproj ? Pruebas automatizadas (58+)
 ### 1. Clonar el repositorio
 ```bash
 git clone <repository-url>
-cd HexagonalArchitectureTemplate
+cd CommerceApiDotNet
 ```
 
 ### 2. Restaurar dependencias
@@ -135,7 +135,7 @@ Edita `Api/appsettings.json` con tus valores:
 ```json
 {
   "ConnectionStrings": {
-    "dbContext": "Server=localhost;Database=BdHexagonalArchitectureTemplate;User Id=sa;Password=admin;"
+    "dbContext": "Server=localhost;Database=CommerceApiDotNet;User Id=sa;Password=admin;"
   },
   "EmailSettings": {
     "SmtpHost": "smtp.gmail.com",
@@ -155,7 +155,7 @@ dotnet ef database update --project Infrastructure --startup-project Api
 
 #### Opción B: Script SQL
 ```sql
-CREATE DATABASE BdHexagonalArchitectureTemplate;
+CREATE DATABASE CommerceApiDotNet;
 ```
 
 ### 5. Compilar
@@ -181,8 +181,8 @@ dotnet run
 ```json
 "Authentication": {
   "SecretKey": "LLAVE-DE-SEGURIDAD-MUY-LARGA-AQUI-MINIMO-64-CARACTERES",
-  "Issuer": "HexagonalArchitectureTemplate",
-  "Audience": "HexagonalArchitectureTemplate-Users",
+  "Issuer": "CommerceApiDotNet",
+  "Audience": "CommerceApiDotNet-Users",
   "AccessTokenExpiration": "15",           // Minutos
   "RefreshTokenExpiration": "7",           // Días
   "AllowMultipleDevices": true,
@@ -396,7 +396,7 @@ Detalles en: [TESTING_SUMMARY.md](./Documentation/TESTING_SUMMARY.md)
 ## 📁 Estructura del Proyecto
 
 ```
-HexagonalArchitectureTemplate/
+CommerceApiDotNet/
 ?
 ??? Domain/                          # Entidades de negocio
 ?   ??? Entities/
@@ -484,7 +484,7 @@ HexagonalArchitectureTemplate/
 ?   ??? TESTING_SUMMARY.md           # Guía de pruebas (58+ tests)
 ?   ??? LOCALIZATION_SETUP.md        # Sistema de i18n (ES/EN)
 ?
-??? HexagonalArchitectureTemplate.sln
+??? CommerceApiDotNet.sln
 ```
 
 ---

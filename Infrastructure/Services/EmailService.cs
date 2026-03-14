@@ -57,10 +57,10 @@ namespace Infrastructure.Services
             _smtpUsername = emailSettings["SmtpUsername"] ?? throw new ArgumentNullException("EmailSettings:SmtpUsername");
             _smtpPassword = emailSettings["SmtpPassword"] ?? throw new ArgumentNullException("EmailSettings:SmtpPassword");
             _fromEmail = emailSettings["FromEmail"] ?? throw new ArgumentNullException("EmailSettings:FromEmail");
-            _fromName = emailSettings["FromName"] ?? "Hexagonal Architecture Template";
+            _fromName = emailSettings["FromName"] ?? "CommerceApiDotNet";
             _enableSsl = bool.Parse(emailSettings["EnableSsl"] ?? "true");
 
-            _companyName = emailSettings["CompanyName"] ?? "Hexagonal Architecture Template";
+            _companyName = emailSettings["CompanyName"] ?? "CommerceApiDotNet";
             _supportEmail = emailSettings["SupportEmail"] ?? "support@company.com";
 
             _logger.LogDebug("EmailService initialized with RazorLight template engine");

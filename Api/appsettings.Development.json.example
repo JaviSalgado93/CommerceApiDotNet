@@ -7,7 +7,7 @@
     }
   },
 
-  // Serilog más verboso en desarrollo
+  // Serilog mï¿½s verboso en desarrollo
   "Serilog": {
     "MinimumLevel": {
       "Default": "Debug",
@@ -34,7 +34,7 @@
     ]
   },
 
-  // CORS más permisivo en desarrollo
+  // CORS mï¿½s permisivo en desarrollo
   "CorsPolicies": [
     {
       "Origin": "http://localhost:4200",
@@ -49,7 +49,7 @@
   ],
 
   "ConnectionStrings": {
-    "dbContext": "Server=localhost;Database=BdHexagonalArchitectureTemplate;Integrated Security=True;User ID=sa;Password=admin;TrustServerCertificate=True;",
+    "dbContext": "Server=localhost;Database=BdCommerceApiDotNet;Integrated Security=True;User ID=sa;Password=admin;TrustServerCertificate=True;",
     "Provider": "SqlServer"
   },
 
@@ -59,19 +59,19 @@
     "SmtpUsername": "tu-email@gmail.com",
     "SmtpPassword": "tu-app-password",
     "FromEmail": "tu-email@gmail.com",
-    "FromName": "Hexagonal Architecture Template [DEV]",
+    "FromName": "CommerceApiDotNet [DEV]",
     "EnableSsl": "true",
-    "CompanyName": "Company Hexagonal Architecture Template Company",
+    "CompanyName": "CommerceApiDotNet",
     "SupportEmail": "support@company.com",
 
-    // CONFIGURACIÓN: Rutas de plantillas (Rutas específicas para desarrollo)
+    // CONFIGURACIï¿½N: Rutas de plantillas (Rutas especï¿½ficas para desarrollo)
     "TemplatesPath": "..\\..\\..\\..\\Infrastructure\\Services\\EmailTemplates"
   },
 
   "SwaggerDoc": {
-    "Title": "Services Template WEB API [DEVELOPMENT]",
+    "Title": "CommerceApiDotNet API [DEVELOPMENT]",
     "Version": "v1",
-    "Description": "WEB Service - Template HexagonalArchitecture - Development Environment"
+    "Description": "E-Commerce API - CommerceApiDotNet - Development Environment"
   },
 
   "GeneralConfigParams": {
