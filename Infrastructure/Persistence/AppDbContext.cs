@@ -15,7 +15,6 @@ namespace Infrastructure.Persistence
         }
 
         #region Modelos Generales    
-        public DbSet<ClienteEntity> Clientes { get; set; }
         public DbSet<UserEntity> Users { get; set; }
         public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
         public DbSet<PasswordResetTokenEntity> PasswordResetTokens { get; set; }
@@ -48,12 +47,6 @@ namespace Infrastructure.Persistence
             // Definimos info de tablas
             #region Configuración Entidades
             
-            // Cliente
-            modelBuilder.Entity<ClienteEntity>(entity =>
-            {
-                entity.ToTable("Clientes", "dbo");
-            });
-
             // User
             modelBuilder.Entity<UserEntity>(entity =>
             {

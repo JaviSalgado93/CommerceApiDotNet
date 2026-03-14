@@ -22,14 +22,12 @@ namespace Api.Middleware
             services.AddScoped<TimeZoneHelper>();
 
             // Registro de Repositorios
-            services.AddScoped<IClienteRepository, ClienteRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
             services.AddScoped<ITokenBlacklistRepository, TokenBlacklistRepository>();
 
             // Registro de Servicios de Aplicación
-            services.AddScoped<IClienteService, ClienteService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IPasswordPolicyService, PasswordPolicyService>();
 
