@@ -10,7 +10,7 @@ namespace Application.Helpers
     /// </summary>
     public static class ResourceTextHelper
     {
-        private static readonly ResourceManager ResourceManager = new ResourceManager("Application.Resources.LocalizedStrings", typeof(ResourceTextHelper).Assembly);
+        private static ResourceManager? _resourceManager;
         private static IConfiguration? _configuration;
 
         /// <summary>
@@ -20,6 +20,19 @@ namespace Application.Helpers
         public static void Initialize(IConfiguration configuration)
         {
             _configuration = configuration;
+            try
+            {
+                // Usar el nombre exacto del namespace + nombre del archivo .resx
+                _resourceManager = new ResourceManager(
+                    "Application.Resources.LocalizedStrings", 
+                    typeof(ResourceTextHelper).Assembly
+                );
+            }
+            catch (Exception ex)
+            {
+                // Log o fallback si falla
+                _resourceManager = null;
+            }
         }
 
         /// <summary>
@@ -29,8 +42,34 @@ namespace Application.Helpers
         /// <returns>Cadena localizada o la clave si no se encuentra</returns>
         public static string Get(string key)
         {
-            var culture = GetCurrentCulture();
-            return ResourceManager.GetString(key, culture) ?? key;
+            if (string.IsNullOrWhiteSpace(key))
+                return string.Empty;
+
+            if (_resourceManager == null)
+                return key;
+
+            try
+            {
+                var culture = GetCurrentCulture();
+                var result = _resourceManager.GetString(key, culture);
+                return result ?? key;
+            }
+            catch (MissingManifestResourceException)
+            {
+                // Si no existe el recurso para esa cultura, intenta con la cultura neutral
+                try
+                {
+                    return _resourceManager.GetString(key, CultureInfo.InvariantCulture) ?? key;
+                }
+                catch
+                {
+                    return key;
+                }
+            }
+            catch
+            {
+                return key;
+            }
         }
 
         /// <summary>
@@ -41,40 +80,40 @@ namespace Application.Helpers
         /// <returns>Cadena localizada o la clave si no se encuentra</returns>
         public static string Get(string key, string cultureName)
         {
+            if (string.IsNullOrWhiteSpace(key))
+                return string.Empty;
+
             if (string.IsNullOrWhiteSpace(cultureName))
-            {
                 return Get(key);
-            }
+
+            if (_resourceManager == null)
+                return key;
 
             try
             {
                 var culture = new CultureInfo(cultureName);
-                return ResourceManager.GetString(key, culture) ?? key;
+                var result = _resourceManager.GetString(key, culture);
+                return result ?? key;
             }
-            catch (CultureNotFoundException)
+            catch
             {
-                // Si la cultura no es válida, usar la predeterminada
-                return Get(key);
+                return key;
             }
         }
 
-        /// <summary>
-        /// Obtiene la cultura actual configurada en la aplicación
-        /// </summary>
-        /// <returns>CultureInfo basada en la configuración</returns>
         private static CultureInfo GetCurrentCulture()
         {
-            // Obtener el idioma desde la configuración
-            var defaultCulture = _configuration?["Localization:DefaultCulture"] ?? "es";
+            if (_configuration == null)
+                return CultureInfo.CurrentCulture;
 
+            var cultureName = _configuration["DefaultCulture"] ?? CultureInfo.CurrentCulture.Name;
             try
             {
-                return new CultureInfo(defaultCulture);
+                return new CultureInfo(cultureName);
             }
-            catch (CultureNotFoundException)
+            catch
             {
-                // Si el idioma configurado no es válido, usar español como fallback
-                return new CultureInfo("es");
+                return CultureInfo.CurrentCulture;
             }
         }
     }
