@@ -1,6 +1,8 @@
 using Api.Configuration;
 using Api.Middleware;
 using Infrastructure.Persistence;
+using Infrastructure.Persistence.Repositories;
+using Application.Ports;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
@@ -253,6 +255,9 @@ public class Program
             Log.Information("Registering application dependencies...");
             builder.Services.RegisterDependencies();
             Log.Information("Application dependencies registered successfully");
+
+            // Role Repository
+            builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 
             // AutoMapper configuration
             builder.Services.AddAutoMapper(typeof(Infrastructure.Mapping.AutoMapperProfile));

@@ -28,7 +28,7 @@ namespace Infrastructure.Persistence.Entities
         public string? ReplacedBy { get; set; }
 
         // Navigation
-        [ForeignKey(nameof(UserId))]
-        public UserEntity User { get; set; } = null!;
+        [ForeignKey("UserId")]
+        public UserEntity? User { get; set; }
     }
 }

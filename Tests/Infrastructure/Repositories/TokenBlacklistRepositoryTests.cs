@@ -21,7 +21,7 @@ public class TokenBlacklistRepositoryTests : TestBase
     public TokenBlacklistRepositoryTests()
     {
         _mockLogger = new Mock<ILogger<TokenBlacklistRepository>>();
-        _repository = new TokenBlacklistRepository(Context);
+        _repository = new TokenBlacklistRepository(Context, _mockLogger.Object);
     }
 
     #region AddTokenAsync Tests

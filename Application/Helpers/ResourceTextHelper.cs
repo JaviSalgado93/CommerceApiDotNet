@@ -24,7 +24,7 @@ namespace Application.Helpers
             {
                 // Usar el nombre exacto del namespace + nombre del archivo .resx
                 _resourceManager = new ResourceManager(
-                    "Application.Resources.LocalizedStrings", 
+                    "Application.Resources.LocalizedStrings",
                     typeof(ResourceTextHelper).Assembly
                 );
             }

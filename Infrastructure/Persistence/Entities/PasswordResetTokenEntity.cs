@@ -14,6 +14,7 @@ namespace Infrastructure.Persistence.Entities
         [Required]
         [MaxLength(200)]
         public string Token { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime ExpiresAt { get; set; }
         public bool IsUsed { get; set; } = false;
 

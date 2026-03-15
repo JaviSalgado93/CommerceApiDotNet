@@ -69,7 +69,8 @@ public class AuthControllerTests
                 Email = "test@test.com",
                 FirstName = "Test",
                 LastName = "User",
-                Role = "User"
+                RoleId = 1,
+                RoleName = "User"
             }
         };
 
@@ -167,7 +168,8 @@ public class AuthControllerTests
                 Email = "newuser@test.com",
                 FirstName = "New",
                 LastName = "User",
-                Role = "User"
+                RoleId = 1,
+                RoleName = "User"
             }
         };
 
@@ -261,7 +263,8 @@ public class AuthControllerTests
                 Email = "test@test.com",
                 FirstName = "Test",
                 LastName = "User",
-                Role = "User"
+                RoleId = 1,
+                RoleName = "User"
             }
         };
 

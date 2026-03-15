@@ -14,7 +14,7 @@ public static class TestDataFixtures
         string passwordHash = "hashedPassword123",
         string firstName = "Test",
         string lastName = "User",
-        string role = "User",
+        int roleId = 1,
         bool isActive = true)
     {
         return new User
@@ -25,7 +25,7 @@ public static class TestDataFixtures
             PasswordHash = passwordHash,
             FirstName = firstName,
             LastName = lastName,
-            Role = role,
+            RoleId = roleId,
             IsActive = isActive,
             FailedAttempts = 0,
             CreatedAt = DateTime.UtcNow,
