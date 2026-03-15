@@ -16,6 +16,7 @@ namespace Tests.Application.Services;
 public class AuthServiceTests
 {
     private readonly Mock<IUserRepository> _mockUserRepository;
+    private readonly Mock<IRoleRepository> _mockRoleRepository;
     private readonly Mock<IRefreshTokenRepository> _mockRefreshTokenRepository;
     private readonly Mock<IPasswordResetTokenRepository> _mockPasswordResetTokenRepository;
     private readonly Mock<IPasswordHasher> _mockPasswordHasher;
@@ -32,6 +33,7 @@ public class AuthServiceTests
     public AuthServiceTests()
     {
         _mockUserRepository = new Mock<IUserRepository>();
+        _mockRoleRepository = new Mock<IRoleRepository>();
         _mockRefreshTokenRepository = new Mock<IRefreshTokenRepository>();
         _mockPasswordResetTokenRepository = new Mock<IPasswordResetTokenRepository>();
         _mockPasswordHasher = new Mock<IPasswordHasher>();
@@ -49,6 +51,7 @@ public class AuthServiceTests
 
         _authService = new AuthService(
             _mockUserRepository.Object,
+            _mockRoleRepository.Object,
             _mockRefreshTokenRepository.Object,
             _mockPasswordHasher.Object,
             _mockConfiguration.Object,

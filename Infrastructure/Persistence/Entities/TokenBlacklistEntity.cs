@@ -11,7 +11,7 @@ namespace Infrastructure.Persistence.Entities
     public class TokenBlacklistEntity
     {
         [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid Id { get; set; }
 
         /// <summary>
         /// El token JWT revocado (almacenado en hash por seguridad)
@@ -42,7 +42,8 @@ namespace Infrastructure.Persistence.Entities
         [MaxLength(50)]
         public string Reason { get; set; } = "Manual revocation";
 
-        // Foreign Key
+        // Navigation
+        [ForeignKey("UserId")]
         public UserEntity? User { get; set; }
     }
 }

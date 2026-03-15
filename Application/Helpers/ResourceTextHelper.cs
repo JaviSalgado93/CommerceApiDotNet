@@ -1,81 +1,85 @@
-using System.Globalization;
-using System.Resources;
 using Microsoft.Extensions.Configuration;
+using System.Resources;
+using System.Reflection;
 
 namespace Application.Helpers
 {
-    /// <summary>
-    /// Helper para acceder a cadenas localizadas desde los archivos .resx
-    /// Soporta localización automática basada en configuración o cultura explícita
-    /// </summary>
     public static class ResourceTextHelper
     {
-        private static readonly ResourceManager ResourceManager = new ResourceManager("Application.Resources.LocalizedStrings", typeof(ResourceTextHelper).Assembly);
         private static IConfiguration? _configuration;
+        private static ResourceManager? _resourceManager;
 
-        /// <summary>
-        /// Inicializa el helper con la configuración de la aplicación
-        /// </summary>
-        /// <param name="configuration">Configuración de la aplicación</param>
         public static void Initialize(IConfiguration configuration)
         {
             _configuration = configuration;
+            try
+            {
+                _resourceManager = new ResourceManager("Application.Resources.LocalizedStrings", typeof(ResourceTextHelper).Assembly);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Warning: Could not load resource manager: {ex.Message}");
+                _resourceManager = null;
+            }
         }
 
-        /// <summary>
-        /// Obtiene una cadena localizada usando la cultura configurada por defecto
-        /// </summary>
-        /// <param name="key">Clave del recurso</param>
-        /// <returns>Cadena localizada o la clave si no se encuentra</returns>
         public static string Get(string key)
         {
-            var culture = GetCurrentCulture();
-            return ResourceManager.GetString(key, culture) ?? key;
-        }
-
-        /// <summary>
-        /// Obtiene una cadena localizada usando una cultura específica
-        /// </summary>
-        /// <param name="key">Clave del recurso</param>
-        /// <param name="cultureName">Nombre de la cultura (ej: "es", "en", "en-US")</param>
-        /// <returns>Cadena localizada o la clave si no se encuentra</returns>
-        public static string Get(string key, string cultureName)
-        {
-            if (string.IsNullOrWhiteSpace(cultureName))
+            // Fallback dictionary con mensajes por defecto en español
+            var fallbackMessages = new Dictionary<string, string>
             {
-                return Get(key);
-            }
+                { "LoginSuccess", "Login exitoso" },
+                { "LogoutSuccess", "Sesión cerrada exitosamente" },
+                { "TokenRefreshedSuccess", "Token renovado exitosamente" },
+                { "TokenRevokedSuccess", "Token revocado exitosamente" },
+                { "UserRegisteredSuccess", "Usuario registrado exitosamente" },
+                { "UserAuthenticated", "Usuario autenticado" },
+                { "UserNotFound", "Usuario no encontrado" },
+                { "UserNotValid", "Error en la operación del usuario" },
+                { "InvalidCredentials", "Credenciales inválidas" },
+                { "InvalidToken", "Token inválido" },
+                { "InvalidUser", "Usuario inválido" },
+                { "InvalidRole", "Rol inválido" },
+                { "AccountDeactivated", "Cuenta desactivada" },
+                { "AccountLocked", "Cuenta bloqueada hasta {0}" },
+                { "InvalidCurrentPassword", "Contraseña actual incorrecta" },
+                { "PasswordChangedSuccess", "Contraseña cambiada exitosamente" },
+                { "ProfileUpdatedSuccess", "Perfil actualizado exitosamente" },
+                { "InvalidResetToken", "Token de reset inválido o expirado" },
+                { "PasswordResetSuccess", "Contraseña reiniciada exitosamente" },
+                { "ResetLinkSent", "Enlace de reset enviado al correo" },
+                { "PasswordRequired", "La contraseña es requerida" },
+                { "EmailRequired", "El email es requerido" },
+                { "UsernameAlreadyExists", "El nombre de usuario ya existe" },
+                { "EmailAlreadyRegistered", "El email ya está registrado" },
+                { "PasswordPolicyViolation", "La contraseña no cumple con los requisitos: {0}" },
+                { "TokenValidation", "Validación de token" },
+                { "PasswordValidationCompleted", "Validación de contraseña completada" },
+                { "PasswordRecommendation.VeryWeak.LongerPassword", "Use una contraseña más larga" },
+                { "PasswordRecommendation.VeryWeak.MixedCharacters", "Mezcle mayúsculas, minúsculas, números y símbolos" },
+                { "PasswordRecommendation.VeryWeak.AvoidCommon", "Evite contraseñas comunes" },
+                { "PasswordRecommendation.Weak.Strengthen", "Fortalezca su contraseña" },
+                { "PasswordRecommendation.Weak.MoreSpecialChars", "Agregue más caracteres especiales" },
+                { "PasswordRecommendation.Strong.Excellent", "Excelente contraseña" }
+            };
 
             try
             {
-                var culture = new CultureInfo(cultureName);
-                return ResourceManager.GetString(key, culture) ?? key;
+                // Intentar obtener del ResourceManager
+                if (_resourceManager != null)
+                {
+                    var value = _resourceManager.GetString(key);
+                    if (!string.IsNullOrEmpty(value))
+                        return value;
+                }
             }
-            catch (CultureNotFoundException)
+            catch
             {
-                // Si la cultura no es válida, usar la predeterminada
-                return Get(key);
+                // Ignorar error y usar fallback
             }
-        }
 
-        /// <summary>
-        /// Obtiene la cultura actual configurada en la aplicación
-        /// </summary>
-        /// <returns>CultureInfo basada en la configuración</returns>
-        private static CultureInfo GetCurrentCulture()
-        {
-            // Obtener el idioma desde la configuración
-            var defaultCulture = _configuration?["Localization:DefaultCulture"] ?? "es";
-
-            try
-            {
-                return new CultureInfo(defaultCulture);
-            }
-            catch (CultureNotFoundException)
-            {
-                // Si el idioma configurado no es válido, usar español como fallback
-                return new CultureInfo("es");
-            }
+            // Usar fallback
+            return fallbackMessages.ContainsKey(key) ? fallbackMessages[key] : key;
         }
     }
 }

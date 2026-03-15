@@ -14,11 +14,6 @@ namespace Infrastructure.Persistence.Repositories
         private readonly AppDbContext _context;
         private readonly ILogger<RefreshTokenRepository> _logger;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RefreshTokenRepository"/> class.
-        /// </summary>
-        /// <param name="context">The database context.</param>
-        /// <param name="logger">The logger instance.</param>
         public RefreshTokenRepository(AppDbContext context, ILogger<RefreshTokenRepository> logger)
         {
             _context = context;
@@ -29,11 +24,9 @@ namespace Infrastructure.Persistence.Repositories
         /// <summary>
         /// Gets a refresh token by its token string.
         /// </summary>
-        /// <param name="token">The refresh token string.</param>
-        /// <returns>The refresh token if found; otherwise, null.</returns>
         public async Task<RefreshToken?> GetByTokenAsync(string token)
         {
-            _logger.LogDebug("Retrieving refresh token: {TokenPrefix}...", token[..8]);
+            _logger.LogDebug("Retrieving refresh token: {TokenPrefix}...", token.Length > 8 ? token[..8] : token);
             
             try
             {
@@ -43,18 +36,17 @@ namespace Infrastructure.Persistence.Repositories
                 
                 if (entity == null)
                 {
-                    _logger.LogDebug("Refresh token not found: {TokenPrefix}...", token[..8]);
+                    _logger.LogDebug("Refresh token not found");
                     return null;
                 }
                 
                 var refreshToken = MapToDomain(entity);
-                _logger.LogDebug("Refresh token retrieved successfully: {TokenPrefix}... (UserId: {UserId})", 
-                    token[..8], entity.UserId);
+                _logger.LogDebug("Refresh token retrieved successfully (UserId: {UserId})", entity.UserId);
                 return refreshToken;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving refresh token: {TokenPrefix}...", token[..8]);
+                _logger.LogError(ex, "Error retrieving refresh token");
                 throw;
             }
         }
@@ -62,8 +54,6 @@ namespace Infrastructure.Persistence.Repositories
         /// <summary>
         /// Gets all active (not revoked and not expired) refresh tokens for a user.
         /// </summary>
-        /// <param name="userId">The user's ID.</param>
-        /// <returns>A collection of active refresh tokens.</returns>
         public async Task<IEnumerable<RefreshToken>> GetActiveByUserIdAsync(Guid userId)
         {
             _logger.LogDebug("Retrieving active refresh tokens for user: {UserId}", userId);
@@ -86,13 +76,35 @@ namespace Infrastructure.Persistence.Repositories
         }
 
         /// <summary>
+        /// Gets all refresh tokens for a user (active and inactive).
+        /// </summary>
+        public async Task<IEnumerable<RefreshToken>> GetByUserIdAsync(Guid userId)
+        {
+            _logger.LogDebug("Retrieving all refresh tokens for user: {UserId}", userId);
+            
+            try
+            {
+                var entities = await _context.RefreshTokens
+                    .Where(rt => rt.UserId == userId)
+                    .ToListAsync();
+                
+                var tokens = entities.Select(MapToDomain).ToList();
+                _logger.LogDebug("Retrieved {Count} refresh tokens for user: {UserId}", tokens.Count, userId);
+                return tokens;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving refresh tokens for user: {UserId}", userId);
+                throw;
+            }
+        }
+
+        /// <summary>
         /// Adds a new refresh token to the database.
         /// </summary>
-        /// <param name="refreshToken">The refresh token to add.</param>
         public async Task AddAsync(RefreshToken refreshToken)
         {
-            _logger.LogDebug("Adding refresh token for user: {UserId}, expires at: {ExpiresAt}", 
-                refreshToken.UserId, refreshToken.ExpiresAt);
+            _logger.LogDebug("Adding refresh token for user: {UserId}", refreshToken.UserId);
             
             try
             {
@@ -100,8 +112,7 @@ namespace Infrastructure.Persistence.Repositories
                 _context.RefreshTokens.Add(entity);
                 await _context.SaveChangesAsync();
                 
-                _logger.LogDebug("Refresh token added successfully for user: {UserId} (TokenId: {TokenId})", 
-                    refreshToken.UserId, refreshToken.Id);
+                _logger.LogDebug("Refresh token added successfully for user: {UserId}", refreshToken.UserId);
             }
             catch (Exception ex)
             {
@@ -113,10 +124,9 @@ namespace Infrastructure.Persistence.Repositories
         /// <summary>
         /// Updates an existing refresh token in the database.
         /// </summary>
-        /// <param name="refreshToken">The refresh token with updated values.</param>
         public async Task UpdateAsync(RefreshToken refreshToken)
         {
-            _logger.LogDebug("Updating refresh token: {TokenId} (UserId: {UserId})", refreshToken.Id, refreshToken.UserId);
+            _logger.LogDebug("Updating refresh token: {TokenId}", refreshToken.Id);
             
             try
             {
@@ -128,8 +138,7 @@ namespace Infrastructure.Persistence.Repositories
                     entity.ReplacedBy = refreshToken.ReplacedBy;
 
                     await _context.SaveChangesAsync();
-                    _logger.LogDebug("Refresh token updated successfully: {TokenId} (UserId: {UserId})", 
-                        refreshToken.Id, refreshToken.UserId);
+                    _logger.LogDebug("Refresh token updated successfully: {TokenId}", refreshToken.Id);
                 }
                 else
                 {
@@ -138,8 +147,7 @@ namespace Infrastructure.Persistence.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating refresh token: {TokenId} (UserId: {UserId})", 
-                    refreshToken.Id, refreshToken.UserId);
+                _logger.LogError(ex, "Error updating refresh token: {TokenId}", refreshToken.Id);
                 throw;
             }
         }
@@ -147,7 +155,6 @@ namespace Infrastructure.Persistence.Repositories
         /// <summary>
         /// Revokes all active refresh tokens for a user.
         /// </summary>
-        /// <param name="userId">The user's ID.</param>
         public async Task RevokeAllByUserIdAsync(Guid userId)
         {
             _logger.LogInformation("Revoking all refresh tokens for user: {UserId}", userId);
@@ -183,10 +190,9 @@ namespace Infrastructure.Persistence.Repositories
         /// <summary>
         /// Revokes a specific refresh token by its token string.
         /// </summary>
-        /// <param name="token">The refresh token string.</param>
         public async Task RevokeTokenAsync(string token)
         {
-            _logger.LogDebug("Revoking specific refresh token: {TokenPrefix}...", token[..8]);
+            _logger.LogDebug("Revoking specific refresh token");
             
             try
             {
@@ -199,17 +205,16 @@ namespace Infrastructure.Persistence.Repositories
                     entity.RevokedAt = DateTime.UtcNow;
                     await _context.SaveChangesAsync();
                     
-                    _logger.LogDebug("Refresh token revoked successfully: {TokenPrefix}... (UserId: {UserId})", 
-                        token[..8], entity.UserId);
+                    _logger.LogDebug("Refresh token revoked successfully (UserId: {UserId})", entity.UserId);
                 }
                 else
                 {
-                    _logger.LogWarning("Attempted to revoke non-existent refresh token: {TokenPrefix}...", token[..8]);
+                    _logger.LogWarning("Attempted to revoke non-existent refresh token");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error revoking refresh token: {TokenPrefix}...", token[..8]);
+                _logger.LogError(ex, "Error revoking refresh token");
                 throw;
             }
         }
@@ -245,14 +250,9 @@ namespace Infrastructure.Persistence.Repositories
             }
         }
 
-        /// <summary>
-        /// Maps a refresh token entity to the domain model.
-        /// </summary>
-        /// <param name="entity">The refresh token entity.</param>
-        /// <returns>The domain refresh token.</returns>
         private static RefreshToken MapToDomain(RefreshTokenEntity entity)
         {
-            var domain = new RefreshToken
+            return new RefreshToken
             {
                 Id = entity.Id,
                 UserId = entity.UserId,
@@ -261,36 +261,11 @@ namespace Infrastructure.Persistence.Repositories
                 ExpiresAt = entity.ExpiresAt,
                 IsRevoked = entity.IsRevoked,
                 RevokedAt = entity.RevokedAt,
-                ReplacedBy = entity.ReplacedBy
+                ReplacedBy = entity.ReplacedBy,
+                User = entity.User != null ? MapUserToDomain(entity.User) : null
             };
-
-            if (entity.User != null)
-            {
-                domain.User = new User
-                {
-                    Id = entity.User.Id,
-                    Username = entity.User.Username,
-                    Email = entity.User.Email,
-                    PasswordHash = entity.User.PasswordHash,
-                    FirstName = entity.User.FirstName,
-                    LastName = entity.User.LastName,
-                    Role = entity.User.Role,
-                    IsActive = entity.User.IsActive,
-                    CreatedAt = entity.User.CreatedAt,
-                    LastAccess = entity.User.LastAccess,
-                    FailedAttempts = entity.User.FailedAttempts,
-                    LockedUntil = entity.User.LockedUntil
-                };
-            }
-
-            return domain;
         }
 
-        /// <summary>
-        /// Maps a domain refresh token to the entity model.
-        /// </summary>
-        /// <param name="domain">The domain refresh token.</param>
-        /// <returns>The refresh token entity.</returns>
         private static RefreshTokenEntity MapToEntity(RefreshToken domain)
         {
             return new RefreshTokenEntity
@@ -303,6 +278,27 @@ namespace Infrastructure.Persistence.Repositories
                 IsRevoked = domain.IsRevoked,
                 RevokedAt = domain.RevokedAt,
                 ReplacedBy = domain.ReplacedBy
+            };
+        }
+
+        private static User MapUserToDomain(UserEntity entity)
+        {
+            return new User
+            {
+                Id = entity.Id,
+                Username = entity.Username,
+                Email = entity.Email,
+                PasswordHash = entity.PasswordHash,
+                FirstName = entity.FirstName,
+                LastName = entity.LastName,
+                RoleId = entity.RoleId,
+                IsActive = entity.IsActive,
+                CreatedAt = entity.CreatedAt,
+                UpdatedAt = entity.UpdatedAt ?? DateTime.UtcNow,
+                UpdatedBy = entity.UpdatedBy,
+                LastAccess = entity.LastAccess,
+                FailedAttempts = entity.FailedAttempts,
+                LockedUntil = entity.LockedUntil
             };
         }
     }

@@ -30,12 +30,16 @@ namespace Infrastructure.Persistence.Entities
         public string LastName { get; set; } = string.Empty;
 
         [Required]
-        [MaxLength(20)]
-        public string Role { get; set; } = "User";
+        public int RoleId { get; set; }
 
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public DateTime? UpdatedAt { get; set; }
+
+        [MaxLength(100)]
+        public string? UpdatedBy { get; set; }
 
         public DateTime? LastAccess { get; set; }
 
@@ -44,6 +48,7 @@ namespace Infrastructure.Persistence.Entities
         public DateTime? LockedUntil { get; set; }
 
         // Navigation
+        public RoleEntity? Role { get; set; }
         public ICollection<RefreshTokenEntity> RefreshTokens { get; set; } = new List<RefreshTokenEntity>();
     }
 }

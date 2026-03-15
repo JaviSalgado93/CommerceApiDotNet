@@ -45,12 +45,27 @@ IF EXISTS (SELECT * FROM sys.objects WHERE type='U' AND name='RefreshTokens')
 IF EXISTS (SELECT * FROM sys.objects WHERE type='U' AND name='Users')
     DROP TABLE [dbo].[Users];
 
+IF EXISTS (SELECT * FROM sys.objects WHERE type='U' AND name='Roles')
+    DROP TABLE [dbo].[Roles];
+
 PRINT 'Previous tables dropped (if existed)';
 
 -- =====================================================
 -- 02. CREATE AUTHENTICATION TABLES
 -- =====================================================
 PRINT '========== CREATING AUTHENTICATION TABLES ==========';
+
+-- Tabla: Roles (Catálogo de Roles)
+CREATE TABLE [dbo].[Roles] (
+    [Id] INT PRIMARY KEY IDENTITY(1,1),
+    [Name] NVARCHAR(50) NOT NULL UNIQUE,
+    [Description] NVARCHAR(255) NULL,
+    [IsActive] BIT NOT NULL DEFAULT 1,
+    [CreatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    [UpdatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    [UpdatedBy] NVARCHAR(100) NULL
+);
+PRINT 'Table Roles created';
 
 -- Tabla: Users (Autenticación)
 CREATE TABLE [dbo].[Users] (
@@ -60,14 +75,15 @@ CREATE TABLE [dbo].[Users] (
     [PasswordHash] NVARCHAR(255) NOT NULL,
     [FirstName] NVARCHAR(50) NOT NULL,
     [LastName] NVARCHAR(50) NOT NULL,
-    [Role] NVARCHAR(20) NOT NULL DEFAULT 'User', -- 'Admin' | 'Administrador' | 'Auxiliar de Registro' | 'User'
+    [RoleId] INT NOT NULL, -- Clave foránea a tabla Roles
     [IsActive] BIT NOT NULL DEFAULT 1,
     [CreatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     [UpdatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     [UpdatedBy] NVARCHAR(100) NULL,
     [LastAccess] DATETIME2 NULL,
     [FailedAttempts] INT NOT NULL DEFAULT 0,
-    [LockedUntil] DATETIME2 NULL
+    [LockedUntil] DATETIME2 NULL,
+    FOREIGN KEY ([RoleId]) REFERENCES [dbo].[Roles]([Id])
 );
 PRINT 'Table Users created';
 
@@ -137,10 +153,16 @@ PRINT 'Table Establishments created';
 -- =====================================================
 PRINT '========== CREATING INDEXES ==========';
 
+-- Roles Indexes
+CREATE INDEX IX_Roles_Name ON [dbo].[Roles] ([Name]);
+CREATE INDEX IX_Roles_IsActive ON [dbo].[Roles] ([IsActive]);
+PRINT 'Roles indexes created';
+
 -- Users Indexes
 CREATE INDEX IX_Users_Username ON [dbo].[Users] ([Username]);
 CREATE INDEX IX_Users_Email ON [dbo].[Users] ([Email]);
 CREATE INDEX IX_Users_IsActive ON [dbo].[Users] ([IsActive]);
+CREATE INDEX IX_Users_RoleId ON [dbo].[Users] ([RoleId]);
 PRINT 'Users indexes created';
 
 -- RefreshTokens Indexes
@@ -173,6 +195,30 @@ PRINT '========== CREATING TRIGGERS ==========';
 GO
 -- //
 
+-- Trigger para Roles (INSTEAD OF UPDATE)
+CREATE TRIGGER [dbo].[tr_Roles_Update]
+ON [dbo].[Roles]
+INSTEAD OF UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    UPDATE [dbo].[Roles]
+    SET 
+        [Name] = inserted.[Name],
+        [Description] = inserted.[Description],
+        [IsActive] = inserted.[IsActive],
+        [UpdatedAt] = GETUTCDATE(),
+        [UpdatedBy] = inserted.[UpdatedBy]
+    FROM [dbo].[Roles]
+    INNER JOIN inserted ON [dbo].[Roles].[Id] = inserted.[Id];
+END;
+
+PRINT 'Trigger [dbo].[tr_Roles_Update] created';
+
+GO
+-- //
+
 -- Trigger para Users (INSTEAD OF UPDATE)
 CREATE TRIGGER [dbo].[tr_Users_Update]
 ON [dbo].[Users]
@@ -188,7 +234,7 @@ BEGIN
         [PasswordHash] = inserted.[PasswordHash],
         [FirstName] = inserted.[FirstName],
         [LastName] = inserted.[LastName],
-        [Role] = inserted.[Role],
+        [RoleId] = inserted.[RoleId],
         [IsActive] = inserted.[IsActive],
         [UpdatedAt] = GETUTCDATE(),
         [UpdatedBy] = inserted.[UpdatedBy],
@@ -331,31 +377,7 @@ GO
 -- //
 
 -- =====================================================
--- 07. INSERT DEFAULT ADMIN USER
--- =====================================================
-PRINT '========== INSERTING DEFAULT DATA ==========';
-
-IF NOT EXISTS (SELECT * FROM [dbo].[Users] WHERE [Username] = 'admin')
-BEGIN
-    INSERT INTO [dbo].[Users] 
-    ([Id], [Username], [Email], [PasswordHash], [FirstName], [LastName], [Role], [IsActive])
-    VALUES 
-    (NEWID(), 'admin', 'admin@commerce-api.com', 
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNvreop4XUPR2', -- Password: Admin123! (BCrypt)
-    'Administrador', 'Sistema', 'Administrador', 1);
-    
-    PRINT 'Admin user created successfully';
-END
-ELSE
-BEGIN
-    PRINT 'Admin user already exists';
-END
-
-GO
--- //
-
--- =====================================================
--- 08. VERIFICATION & FINAL VALIDATION
+-- 07. VERIFICATION & FINAL VALIDATION
 -- =====================================================
 PRINT '';
 PRINT '========== VERIFICATION RESULTS ==========';
@@ -370,36 +392,4 @@ WHERE TABLE_SCHEMA = 'dbo'
 ORDER BY TABLE_NAME;
 
 PRINT '';
-PRINT 'Row Count per Table:';
-SELECT 'Users' AS TableName, COUNT(*) AS RecordCount FROM [dbo].[Users]
-UNION ALL
-SELECT 'RefreshTokens' AS TableName, COUNT(*) AS RecordCount FROM [dbo].[RefreshTokens]
-UNION ALL
-SELECT 'TokenBlacklist' AS TableName, COUNT(*) AS RecordCount FROM [dbo].[TokenBlacklist]
-UNION ALL
-SELECT 'Merchants' AS TableName, COUNT(*) AS RecordCount FROM [dbo].[Merchants]
-UNION ALL
-SELECT 'Establishments' AS TableName, COUNT(*) AS RecordCount FROM [dbo].[Establishments];
-
-PRINT '';
-PRINT 'Admin User Details:';
-SELECT 
-    [Id],
-    [Username],
-    [Email],
-    [FirstName],
-    [LastName],
-    [Role],
-    [IsActive],
-    [CreatedAt]
-FROM [dbo].[Users]
-WHERE [Username] = 'admin';
-
-PRINT '';
 PRINT '========== DATABASE SETUP COMPLETED SUCCESSFULLY ==========';
-PRINT '';
-PRINT 'Next Steps:';
-PRINT '1. Run: 1_Insert_Seed_Data.sql (to populate test data)';
-PRINT '2. Verify data with: SELECT * FROM fn_GetActiveMerchantsReport();';
-PRINT '3. Connect from your .NET application using Entity Framework Core';
-PRINT '';

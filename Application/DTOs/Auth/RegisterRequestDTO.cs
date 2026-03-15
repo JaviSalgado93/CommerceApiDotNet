@@ -29,6 +29,10 @@ namespace Application.DTOs.Auth
         [Required(ErrorMessageResourceType = typeof(ErrorMessages), ErrorMessageResourceName = nameof(ErrorMessages.LastNameRequired))]
         [PersonalName]
         public string LastName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = nameof(ErrorMessages.RoleIdRequired))]
+        [Range(1, int.MaxValue, ErrorMessage = nameof(ErrorMessages.RoleIdInvalid))]
+        public int RoleId { get; set; }
     }
 
     /// <summary>
@@ -44,5 +48,7 @@ namespace Application.DTOs.Auth
         public const string FirstNameRequired = nameof(FirstNameRequired);
         public const string LastNameRequired = nameof(LastNameRequired);
         public const string PasswordsDoNotMatch = nameof(PasswordsDoNotMatch);
+        public const string RoleIdRequired = nameof(RoleIdRequired);
+        public const string RoleIdInvalid = nameof(RoleIdInvalid);
     }
 }

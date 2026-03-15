@@ -1,8 +1,8 @@
+using Application.Ports;
 using Domain.Entities;
 using Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Application.Ports;
 
 namespace Infrastructure.Persistence.Repositories
 {
@@ -25,11 +25,9 @@ namespace Infrastructure.Persistence.Repositories
         /// <summary>
         /// Adds a new password reset token to the database.
         /// </summary>
-        /// <param name="token">The password reset token entity to add.</param>
         public async Task AddAsync(PasswordResetToken token)
         {
-            _logger.LogInformation("Adding password reset token for user: {UserId}, expires at: {ExpiresAt}", 
-                token.UserId, token.ExpiresAt);
+            _logger.LogInformation("Adding password reset token for user: {UserId}", token.UserId);
             
             try
             {
@@ -38,6 +36,7 @@ namespace Infrastructure.Persistence.Repositories
                     Id = token.Id,
                     UserId = token.UserId,
                     Token = token.Token,
+                    CreatedAt = token.CreatedAt,
                     ExpiresAt = token.ExpiresAt,
                     IsUsed = token.IsUsed
                 };
@@ -45,8 +44,7 @@ namespace Infrastructure.Persistence.Repositories
                 _context.PasswordResetTokens.Add(entity);
                 await _context.SaveChangesAsync();
                 
-                _logger.LogInformation("Password reset token added successfully: {TokenId} (UserId: {UserId})", 
-                    token.Id, token.UserId);
+                _logger.LogInformation("Password reset token added successfully: {TokenId}", token.Id);
             }
             catch (Exception ex)
             {
@@ -58,11 +56,9 @@ namespace Infrastructure.Persistence.Repositories
         /// <summary>
         /// Retrieves a password reset token by its token string.
         /// </summary>
-        /// <param name="token">The token string to search for.</param>
-        /// <returns>The matching PasswordResetToken or null if not found.</returns>
         public async Task<PasswordResetToken?> GetByTokenAsync(string token)
         {
-            _logger.LogDebug("Retrieving password reset token: {TokenPrefix}...", token[..8]);
+            _logger.LogDebug("Retrieving password reset token");
             
             try
             {
@@ -71,7 +67,7 @@ namespace Infrastructure.Persistence.Repositories
                     
                 if (entity == null) 
                 {
-                    _logger.LogDebug("Password reset token not found: {TokenPrefix}...", token[..8]);
+                    _logger.LogDebug("Password reset token not found");
                     return null;
                 }
                 
@@ -80,17 +76,47 @@ namespace Infrastructure.Persistence.Repositories
                     Id = entity.Id,
                     UserId = entity.UserId,
                     Token = entity.Token,
+                    CreatedAt = entity.CreatedAt,
                     ExpiresAt = entity.ExpiresAt,
                     IsUsed = entity.IsUsed
                 };
                 
-                _logger.LogDebug("Password reset token retrieved successfully: {TokenPrefix}... (UserId: {UserId}, IsUsed: {IsUsed}, ExpiresAt: {ExpiresAt})", 
-                    token[..8], entity.UserId, entity.IsUsed, entity.ExpiresAt);
+                _logger.LogDebug("Password reset token retrieved successfully");
                 return resetToken;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving password reset token: {TokenPrefix}...", token[..8]);
+                _logger.LogError(ex, "Error retrieving password reset token");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Updates an existing password reset token in the database.
+        /// </summary>
+        public async Task UpdateAsync(PasswordResetToken token)
+        {
+            _logger.LogInformation("Updating password reset token: {TokenId}", token.Id);
+            
+            try
+            {
+                var entity = await _context.PasswordResetTokens.FindAsync(token.Id);
+                if (entity == null)
+                {
+                    _logger.LogWarning("Attempted to update non-existent password reset token: {TokenId}", token.Id);
+                    throw new InvalidOperationException($"Password reset token with ID {token.Id} not found");
+                }
+
+                entity.IsUsed = token.IsUsed;
+                entity.ExpiresAt = token.ExpiresAt;
+
+                await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("Password reset token updated successfully: {TokenId}", token.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating password reset token: {TokenId}", token.Id);
                 throw;
             }
         }
@@ -98,7 +124,6 @@ namespace Infrastructure.Persistence.Repositories
         /// <summary>
         /// Marks a password reset token as used in the database.
         /// </summary>
-        /// <param name="id">The ID of the token to mark as used.</param>
         public async Task MarkAsUsedAsync(Guid id)
         {
             _logger.LogInformation("Marking password reset token as used: {TokenId}", id);
@@ -111,8 +136,7 @@ namespace Infrastructure.Persistence.Repositories
                     entity.IsUsed = true;
                     await _context.SaveChangesAsync();
                     
-                    _logger.LogInformation("Password reset token marked as used successfully: {TokenId} (UserId: {UserId})", 
-                        id, entity.UserId);
+                    _logger.LogInformation("Password reset token marked as used successfully: {TokenId}", id);
                 }
                 else
                 {

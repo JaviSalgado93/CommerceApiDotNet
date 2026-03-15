@@ -1,6 +1,6 @@
-﻿using Infrastructure.Persistence.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Infrastructure.Persistence.Entities;
 
 namespace Infrastructure.Persistence
 {
@@ -14,20 +14,19 @@ namespace Infrastructure.Persistence
         {
         }
 
-        #region Modelos Generales    
+        #region DbSets
+        public DbSet<RoleEntity> Roles { get; set; }
         public DbSet<UserEntity> Users { get; set; }
         public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
         public DbSet<PasswordResetTokenEntity> PasswordResetTokens { get; set; }
         public DbSet<TokenBlacklistEntity> TokenBlacklist { get; set; }
         #endregion
 
-        #region DTOs 
-        //public DbSet<ResponseAllTableOtherExample> ResponseAllTableOtherExample { get; set; }
-        #endregion
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json");
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json");
             var configuration = builder.Build();
 
             if (!optionsBuilder.IsConfigured)
@@ -41,76 +40,86 @@ namespace Infrastructure.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Desactivamos llave primaria para DTOs de SPs.
-            //modelBuilder.Entity<ResponseAllTableOtherExample>().HasNoKey();
+            // Users - IMPORTANTE: Desactivar OUTPUT para que funcione con triggers INSTEAD OF
+            modelBuilder.Entity<UserEntity>()
+                .HasKey(u => u.Id);
 
-            // Definimos info de tablas
-            #region Configuración Entidades
-            
-            // User - IMPORTANTE: Desactivar OUTPUT para triggers INSTEAD OF
-            modelBuilder.Entity<UserEntity>(entity =>
-            {
-                entity.ToTable("Users", "dbo");
-                entity.HasIndex(e => e.Username).IsUnique();
-                entity.HasIndex(e => e.Email).IsUnique();
-                entity.HasIndex(e => e.Username);
-                entity.HasIndex(e => e.Email);
-                
-                // Desactivar OUTPUT clause para compatibilidad con triggers INSTEAD OF
-                entity.ToTable(tb => tb.UseSqlOutputClause(false));
-            });
+            // No usar identity, ya que el trigger maneja las inserciones
+            modelBuilder.Entity<UserEntity>()
+                .Property(u => u.Id)
+                .HasDefaultValueSql("NEWID()")
+                .ValueGeneratedOnAdd();
 
-            // RefreshToken
-            modelBuilder.Entity<RefreshTokenEntity>(entity =>
-            {
-                entity.ToTable("RefreshTokens", "dbo");
-                entity.HasIndex(e => e.Token).IsUnique();
-                entity.HasIndex(e => e.UserId);
-                
-                // Relación con User
-                entity.HasOne(rt => rt.User)
-                      .WithMany(u => u.RefreshTokens)
-                      .HasForeignKey(rt => rt.UserId)
-                      .OnDelete(DeleteBehavior.Cascade);
-                
-                // Desactivar OUTPUT clause para compatibilidad con triggers INSTEAD OF
-                entity.ToTable(tb => tb.UseSqlOutputClause(false));
-            });
+            modelBuilder.Entity<UserEntity>()
+                .ToTable(tb => tb.HasTrigger("tr_Users_Update")); // Indicar que hay trigger
 
-            // PasswordResetToken
-            modelBuilder.Entity<PasswordResetTokenEntity>(entity =>
-            {
-                entity.ToTable("PasswordResetTokens", "dbo");
-                entity.HasIndex(e => e.Token).IsUnique();
-                entity.HasOne(e => e.User)
-                      .WithMany()
-                      .HasForeignKey(e => e.UserId)
-                      .OnDelete(DeleteBehavior.Cascade);
-                
-                // Desactivar OUTPUT clause para compatibilidad con triggers INSTEAD OF
-                entity.ToTable(tb => tb.UseSqlOutputClause(false));
-            });
+            modelBuilder.Entity<UserEntity>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
+
+            modelBuilder.Entity<UserEntity>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+
+            modelBuilder.Entity<UserEntity>()
+                .HasOne(u => u.Role)
+                .WithMany(r => r.Users)
+                .HasForeignKey(u => u.RoleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // RefreshTokens
+            modelBuilder.Entity<RefreshTokenEntity>()
+                .HasKey(rt => rt.Id);
+
+            modelBuilder.Entity<RefreshTokenEntity>()
+                .Property(rt => rt.Id)
+                .ValueGeneratedNever(); // No generar valores automáticos
+
+            modelBuilder.Entity<RefreshTokenEntity>()
+                .HasIndex(rt => rt.Token)
+                .IsUnique();
+
+            modelBuilder.Entity<RefreshTokenEntity>()
+                .HasOne(rt => rt.User)
+                .WithMany(u => u.RefreshTokens)
+                .HasForeignKey(rt => rt.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // PasswordResetTokens
+            modelBuilder.Entity<PasswordResetTokenEntity>()
+                .HasKey(prt => prt.Id);
+
+            modelBuilder.Entity<PasswordResetTokenEntity>()
+                .Property(prt => prt.Id)
+                .ValueGeneratedNever(); // No generar valores automáticos
+
+            modelBuilder.Entity<PasswordResetTokenEntity>()
+                .HasIndex(prt => prt.Token)
+                .IsUnique();
+
+            modelBuilder.Entity<PasswordResetTokenEntity>()
+                .HasOne(prt => prt.User)
+                .WithMany()
+                .HasForeignKey(prt => prt.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // TokenBlacklist
-            modelBuilder.Entity<TokenBlacklistEntity>(entity =>
-            {
-                entity.ToTable("TokenBlacklist", "dbo");
-                entity.HasIndex(e => e.TokenHash).IsUnique();
-                entity.HasIndex(e => e.UserId);
-                entity.HasIndex(e => e.ExpiresAt);
-                
-                // Relación con User
-                entity.HasOne(tb => tb.User)
-                      .WithMany()
-                      .HasForeignKey(tb => tb.UserId)
-                      .OnDelete(DeleteBehavior.Cascade);
-                
-                // Desactivar OUTPUT clause para compatibilidad con triggers INSTEAD OF
-                entity.ToTable(tb => tb.UseSqlOutputClause(false));
-            });
-            #endregion
+            modelBuilder.Entity<TokenBlacklistEntity>()
+                .HasKey(tb => tb.Id);
 
-            //OnModelCreatingPartial(modelBuilder);
+            modelBuilder.Entity<TokenBlacklistEntity>()
+                .Property(tb => tb.Id)
+                .ValueGeneratedNever(); // No generar valores automáticos
+
+            modelBuilder.Entity<TokenBlacklistEntity>()
+                .HasIndex(tb => tb.TokenHash)
+                .IsUnique();
+
+            modelBuilder.Entity<TokenBlacklistEntity>()
+                .HasOne(tb => tb.User)
+                .WithMany()
+                .HasForeignKey(tb => tb.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

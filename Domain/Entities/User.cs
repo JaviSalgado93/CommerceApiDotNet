@@ -28,18 +28,25 @@ namespace Domain.Entities
         public string LastName { get; set; } = string.Empty;
         
         [Required]
-        [MaxLength(20)]
-        public string Role { get; set; } = "User";
+        public int RoleId { get; set; }
         
         public bool IsActive { get; set; } = true;
         
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+        [MaxLength(100)]
+        public string? UpdatedBy { get; set; }
         
         public DateTime? LastAccess { get; set; }
         
         public int FailedAttempts { get; set; } = 0;
         
         public DateTime? LockedUntil { get; set; }
+
+        // Navigation property
+        public Role? Role { get; set; }
 
         // Domain methods
         public string GetFullName()

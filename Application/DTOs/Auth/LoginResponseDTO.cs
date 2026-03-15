@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Application.DTOs.Auth
 {
     public class LoginResponseDTO
@@ -16,7 +18,8 @@ namespace Application.DTOs.Auth
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string FullName => $"{FirstName} {LastName}".Trim();
-        public string Role { get; set; } = string.Empty;
+        public int RoleId { get; set; }
+        public string RoleName { get; set; } = string.Empty;
         public DateTime? LastAccess { get; set; }
     }
 }

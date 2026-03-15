@@ -197,7 +197,8 @@ namespace Api.Controllers
                             Email = user.Email,
                             FirstName = user.FirstName,
                             LastName = user.LastName,
-                            Role = user.Role,
+                            RoleId = user.RoleId,
+                            RoleName = string.Empty,
                             LastAccess = user.LastAccess
                         };
                         return Ok(ApiResponseHelper.Success(response, ResourceTextHelper.Get("UserAuthenticated")));
