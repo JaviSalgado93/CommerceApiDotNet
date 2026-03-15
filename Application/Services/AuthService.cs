@@ -1,6 +1,6 @@
-using Application.DTOs.Auth;
 using Application.Ports;
 using Application.Helpers;
+using Application.DTOs.Auth;
 using Domain.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -92,6 +92,7 @@ namespace Application.Services
                     request.Username, user.Id, user.FailedAttempts + 1);
                 
                 user.RegisterFailedAttempt();
+                user.UpdatedBy = "system";
                 await _userRepository.UpdateAsync(user);
                 throw new UnauthorizedAccessException(ResourceTextHelper.Get("InvalidCredentials"));
             }
@@ -102,8 +103,8 @@ namespace Application.Services
             // Comentado temporalmente para evitar OUTPUT clause con triggers
             // user.RegisterSuccessfulAccess();
             // await _userRepository.UpdateAsync(user);
-
             // Generate tokens
+
             var accessToken = GenerateJwtToken(user);
             var refreshToken = GenerateRefreshToken();
 
@@ -121,7 +122,7 @@ namespace Application.Services
 
             await _refreshTokenRepository.AddAsync(refreshTokenEntity);
 
-            // Get role for response
+            // Get role for response (Obtener el rol para incluir el nombre)
             var role = await _roleRepository.GetByIdAsync(user.RoleId);
 
             return new LoginResponseDTO
@@ -283,6 +284,7 @@ namespace Application.Services
 
             _logger.LogInformation("Token refreshed successfully for user: {UserId}", user.Id);
 
+            // Obtener el nombre del rol
             var role = await _roleRepository.GetByIdAsync(user.RoleId);
 
             return new LoginResponseDTO
@@ -427,7 +429,7 @@ namespace Application.Services
             user.Email = dto.Email;
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
-            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedBy = user.Username;
 
             await _userRepository.UpdateAsync(user);
             _logger.LogInformation("User profile updated: {UserId}", userId);
@@ -452,7 +454,7 @@ namespace Application.Services
             }
 
             user.PasswordHash = _passwordHasher.HashPassword(dto.NewPassword);
-            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedBy = user.Username;
 
             await _userRepository.UpdateAsync(user);
             _logger.LogInformation("Password changed successfully: {UserId}", userId);
@@ -515,7 +517,7 @@ namespace Application.Services
             }
 
             user.PasswordHash = _passwordHasher.HashPassword(dto.NewPassword);
-            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedBy = "password-reset";
 
             await _userRepository.UpdateAsync(user);
 
@@ -538,7 +540,7 @@ namespace Application.Services
             }
 
             user.IsActive = false;
-            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedBy = "system";
             await _userRepository.UpdateAsync(user);
 
             await RevokeAllTokensAsync(userId);
@@ -587,6 +589,11 @@ namespace Application.Services
                 RoleName = role?.Name ?? "Unknown",
                 LastAccess = user.LastAccess
             };
+        }
+
+        public async Task<Role?> GetRoleByIdAsync(int roleId)
+        {
+            return await _roleRepository.GetByIdAsync(roleId);
         }
     }
 }

@@ -186,10 +186,20 @@ namespace Api.Controllers
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
                 if (userIdClaim != null && Guid.TryParse(userIdClaim.Value, out var userId))
                 {
-                    var accessToken = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+                    // Extraer el token del header en lugar de User.Claims
+                    var accessToken = Request.Headers["Authorization"]
+                        .ToString()
+                        .Replace("Bearer ", "");
+
+                    if (string.IsNullOrWhiteSpace(accessToken))
+                        return BadRequest(ApiResponseHelper.BadRequest("Access token is missing"));
+
                     var user = await _authService.GetUserFromTokenAsync(accessToken);
                     if (user != null)
                     {
+                        // Obtener el nombre del rol
+                        var role = await _authService.GetRoleByIdAsync(user.RoleId);
+                        
                         var response = new UserInfoDTO
                         {
                             Id = user.Id,
@@ -198,7 +208,7 @@ namespace Api.Controllers
                             FirstName = user.FirstName,
                             LastName = user.LastName,
                             RoleId = user.RoleId,
-                            RoleName = string.Empty,
+                            RoleName = role?.Name ?? "Unknown",
                             LastAccess = user.LastAccess
                         };
                         return Ok(ApiResponseHelper.Success(response, ResourceTextHelper.Get("UserAuthenticated")));

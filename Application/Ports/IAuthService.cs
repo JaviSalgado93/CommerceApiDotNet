@@ -15,6 +15,7 @@ namespace Application.Ports
         string GenerateJwtToken(User user);
         string GenerateRefreshToken();
         Task<User?> GetUserFromTokenAsync(string token);
+        Task<Role?> GetRoleByIdAsync(int roleId);
         Task UpdateUserProfileAsync(Guid userId, UpdateUserProfileDTO dto);
         Task ChangePasswordAsync(Guid userId, ChangePasswordDTO dto);
         Task RequestPasswordResetAsync(string email);
