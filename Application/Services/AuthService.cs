@@ -346,7 +346,9 @@ namespace Application.Services
         /// </summary>
         public string GenerateJwtToken(User user)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Authentication:SecretKey"] ?? ""));
+            var securityKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_configuration["Authentication:SecretKey"] ?? "")
+            );
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>
@@ -361,8 +363,8 @@ namespace Application.Services
             };
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
+                issuer: _configuration["Authentication:Issuer"],
+                audience: _configuration["Authentication:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(GetAccessTokenExpirationMinutes()),
                 signingCredentials: credentials
