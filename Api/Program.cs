@@ -36,13 +36,6 @@ public class Program
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            if (builder.Environment.IsDevelopment())
-            {
-                // Cargar User-Secrets solo en Development (archivo encriptado local, NO en Git)
-                builder.Configuration.AddUserSecrets<Program>(optional: true);
-                Log.Information("User-Secrets cargados para Development");
-            }
-
             // Cargar Environment Variables (siempre, máxima prioridad en Azure)
             builder.Configuration.AddEnvironmentVariables();
             Log.Information("Environment Variables cargados");

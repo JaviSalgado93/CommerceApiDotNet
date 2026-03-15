@@ -22,7 +22,6 @@ END
 
 GO
 -- //
-use master;
 
 USE CommerceApiDotNet;
 
@@ -174,73 +173,126 @@ PRINT '========== CREATING TRIGGERS ==========';
 GO
 -- //
 
--- Triggers para Users
-CREATE TRIGGER tr_Users_Update
+-- Trigger para Users (INSTEAD OF UPDATE)
+CREATE TRIGGER [dbo].[tr_Users_Update]
 ON [dbo].[Users]
-AFTER UPDATE
+INSTEAD OF UPDATE
 AS
 BEGIN
+    SET NOCOUNT ON;
+    
     UPDATE [dbo].[Users]
-    SET [UpdatedAt] = GETUTCDATE()
-    WHERE [Id] IN (SELECT [Id] FROM inserted);
+    SET 
+        [Username] = inserted.[Username],
+        [Email] = inserted.[Email],
+        [PasswordHash] = inserted.[PasswordHash],
+        [FirstName] = inserted.[FirstName],
+        [LastName] = inserted.[LastName],
+        [Role] = inserted.[Role],
+        [IsActive] = inserted.[IsActive],
+        [UpdatedAt] = GETUTCDATE(),
+        [UpdatedBy] = inserted.[UpdatedBy],
+        [LastAccess] = inserted.[LastAccess],
+        [FailedAttempts] = inserted.[FailedAttempts],
+        [LockedUntil] = inserted.[LockedUntil]
+    FROM [dbo].[Users]
+    INNER JOIN inserted ON [dbo].[Users].[Id] = inserted.[Id];
 END;
-PRINT 'Trigger tr_Users_Update created';
+
+PRINT 'Trigger [dbo].[tr_Users_Update] created';
 
 GO
--- //
 
--- Triggers para Merchants
-CREATE TRIGGER tr_Merchants_Insert
+-- Trigger para Merchants (INSTEAD OF INSERT)
+CREATE TRIGGER [dbo].[tr_Merchants_Insert]
 ON [dbo].[Merchants]
-AFTER INSERT
+INSTEAD OF INSERT
 AS
 BEGIN
-    UPDATE [dbo].[Merchants]
-    SET [UpdatedAt] = GETUTCDATE()
-    WHERE [Id] IN (SELECT [Id] FROM inserted);
+    SET NOCOUNT ON;
+    
+    INSERT INTO [dbo].[Merchants] 
+    ([Name], [Municipality], [Phone], [Email], [Status], [CreatedAt], [UpdatedAt], [CreatedByUserId], [UpdatedBy])
+    SELECT 
+        [Name], [Municipality], [Phone], [Email], [Status], 
+        GETUTCDATE(), GETUTCDATE(), [CreatedByUserId], [UpdatedBy]
+    FROM inserted;
 END;
 
-GO
--- //
+PRINT 'Trigger [dbo].[tr_Merchants_Insert] created';
 
-CREATE TRIGGER tr_Merchants_Update
+GO
+
+-- Trigger para Merchants (INSTEAD OF UPDATE)
+CREATE TRIGGER [dbo].[tr_Merchants_Update]
 ON [dbo].[Merchants]
-AFTER UPDATE
+INSTEAD OF UPDATE
 AS
 BEGIN
+    SET NOCOUNT ON;
+    
     UPDATE [dbo].[Merchants]
-    SET [UpdatedAt] = GETUTCDATE()
-    WHERE [Id] IN (SELECT [Id] FROM inserted);
+    SET 
+        [Name] = inserted.[Name],
+        [Municipality] = inserted.[Municipality],
+        [Phone] = inserted.[Phone],
+        [Email] = inserted.[Email],
+        [Status] = inserted.[Status],
+        [UpdatedAt] = GETUTCDATE(),
+        [UpdatedBy] = inserted.[UpdatedBy]
+    FROM [dbo].[Merchants]
+    INNER JOIN inserted ON [dbo].[Merchants].[Id] = inserted.[Id];
 END;
-PRINT 'Triggers for Merchants created';
+
+PRINT 'Trigger [dbo].[tr_Merchants_Update] created';
 
 GO
--- //
 
--- Triggers para Establishments
-CREATE TRIGGER tr_Establishments_Insert
+-- Trigger para Establishments (INSTEAD OF INSERT)
+CREATE TRIGGER [dbo].[tr_Establishments_Insert]
 ON [dbo].[Establishments]
-AFTER INSERT
+INSTEAD OF INSERT
 AS
 BEGIN
-    UPDATE [dbo].[Establishments]
-    SET [UpdatedAt] = GETUTCDATE()
-    WHERE [Id] IN (SELECT [Id] FROM inserted);
+    SET NOCOUNT ON;
+    
+    INSERT INTO [dbo].[Establishments] 
+    ([MerchantId], [Name], [Revenue], [EmployeeCount], [CreatedAt], [UpdatedAt], [UpdatedBy])
+    SELECT 
+        [MerchantId], [Name], [Revenue], [EmployeeCount], 
+        GETUTCDATE(), GETUTCDATE(), [UpdatedBy]
+    FROM inserted;
 END;
+
+PRINT 'Trigger [dbo].[tr_Establishments_Insert] created';
 
 GO
--- //
 
-CREATE TRIGGER tr_Establishments_Update
+-- Trigger para Establishments (INSTEAD OF UPDATE)
+CREATE TRIGGER [dbo].[tr_Establishments_Update]
 ON [dbo].[Establishments]
-AFTER UPDATE
+INSTEAD OF UPDATE
 AS
 BEGIN
+    SET NOCOUNT ON;
+    
     UPDATE [dbo].[Establishments]
-    SET [UpdatedAt] = GETUTCDATE()
-    WHERE [Id] IN (SELECT [Id] FROM inserted);
+    SET 
+        [MerchantId] = inserted.[MerchantId],
+        [Name] = inserted.[Name],
+        [Revenue] = inserted.[Revenue],
+        [EmployeeCount] = inserted.[EmployeeCount],
+        [UpdatedAt] = GETUTCDATE(),
+        [UpdatedBy] = inserted.[UpdatedBy]
+    FROM [dbo].[Establishments]
+    INNER JOIN inserted ON [dbo].[Establishments].[Id] = inserted.[Id];
 END;
-PRINT 'Triggers for Establishments created';
+
+PRINT 'Trigger [dbo].[tr_Establishments_Update] created';
+GO
+
+PRINT '========== ALL TRIGGERS RECREATED SUCCESSFULLY ==========';
+GO
 
 -- =====================================================
 -- 06. CREATE FUNCTIONS / STORED PROCEDURES

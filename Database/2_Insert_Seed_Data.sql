@@ -1,7 +1,7 @@
 /****** 
 Script: CommerceAPI - Seed Data
 Creado: 2026-03-14
-Descripción: Inserta datos de prueba (RETO 03)
+Descripción: Inserta datos de prueba
 Base de datos: CommerceApiDotNet
 Nota: Ejecutar DESPUÉS de schema.sql
 Advertencia: Los passwords están en plain para desarrollo. En producción deben estar hasheados con BCrypt.
@@ -36,6 +36,7 @@ END
 DECLARE @AdminUserId UNIQUEIDENTIFIER;
 SELECT @AdminUserId = [Id] FROM [dbo].[Users] WHERE [Username] = 'admin';
 
+-- NO usar [Id] explícito - dejar que la IDENTITY lo genere
 INSERT INTO [dbo].[Merchants] ([Name], [Municipality], [Phone], [Email], [Status], [CreatedByUserId])
 VALUES
 ('Empresa Comercial 1', 'Bogotá', '+573001234567', 'empresa1@example.com', 'Activo', @AdminUserId),

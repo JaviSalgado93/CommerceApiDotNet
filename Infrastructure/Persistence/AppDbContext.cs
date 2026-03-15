@@ -47,7 +47,7 @@ namespace Infrastructure.Persistence
             // Definimos info de tablas
             #region Configuración Entidades
             
-            // User
+            // User - IMPORTANTE: Desactivar OUTPUT para triggers INSTEAD OF
             modelBuilder.Entity<UserEntity>(entity =>
             {
                 entity.ToTable("Users", "dbo");
@@ -55,6 +55,9 @@ namespace Infrastructure.Persistence
                 entity.HasIndex(e => e.Email).IsUnique();
                 entity.HasIndex(e => e.Username);
                 entity.HasIndex(e => e.Email);
+                
+                // Desactivar OUTPUT clause para compatibilidad con triggers INSTEAD OF
+                entity.ToTable(tb => tb.UseSqlOutputClause(false));
             });
 
             // RefreshToken
@@ -69,6 +72,9 @@ namespace Infrastructure.Persistence
                       .WithMany(u => u.RefreshTokens)
                       .HasForeignKey(rt => rt.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
+                
+                // Desactivar OUTPUT clause para compatibilidad con triggers INSTEAD OF
+                entity.ToTable(tb => tb.UseSqlOutputClause(false));
             });
 
             // PasswordResetToken
@@ -80,6 +86,9 @@ namespace Infrastructure.Persistence
                       .WithMany()
                       .HasForeignKey(e => e.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
+                
+                // Desactivar OUTPUT clause para compatibilidad con triggers INSTEAD OF
+                entity.ToTable(tb => tb.UseSqlOutputClause(false));
             });
 
             // TokenBlacklist
@@ -88,13 +97,16 @@ namespace Infrastructure.Persistence
                 entity.ToTable("TokenBlacklist", "dbo");
                 entity.HasIndex(e => e.TokenHash).IsUnique();
                 entity.HasIndex(e => e.UserId);
-                entity.HasIndex(e => e.ExpiresAt); // Para limpiar expirados
+                entity.HasIndex(e => e.ExpiresAt);
                 
                 // Relación con User
                 entity.HasOne(tb => tb.User)
                       .WithMany()
                       .HasForeignKey(tb => tb.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
+                
+                // Desactivar OUTPUT clause para compatibilidad con triggers INSTEAD OF
+                entity.ToTable(tb => tb.UseSqlOutputClause(false));
             });
             #endregion
 
