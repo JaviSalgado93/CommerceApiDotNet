@@ -36,7 +36,7 @@ Esta es una **evaluación técnica fullstack .NET** que simula un escenario real d
 ### RETO 05: Web API - Seguridad
 **Autenticación y Autorización con JWT**
 
-- ? **Endpoint de Login** (públíco, sin requiere JWT)
+- ? **Endpoint de Login** (público, sin requiere JWT)
   - Recibe: Email y Contraseña
   - Genera: JWT con expiración de 1 hora
   - Respuesta: Access Token, Refresh Token, Datos Usuario
@@ -236,7 +236,7 @@ Se utilizó una base de datos SQL Server con **8 tablas relacionadas** que soport
 ?     Infrastructure.csproj               ?
 ???????????????????????????????????????????
 
-Tests.csproj ? Pruebas automatizadas (58+)
+Tests.csproj - Pruebas automatizadas
 ```
 
 ### **Responsabilidades por Capa:**
@@ -424,8 +424,8 @@ curl https://localhost:7085/api/municipalities?pageNumber=1&pageSize=5 \
 {
   "success": true,
   "data": [
-    { "id": 1, "name": "BOGOTÁ", "code": "25001", "department": "CUNDINAMARCA" },
-    { "id": 2, "name": "MEDELLÍN", "code": "05001", "department": "ANTIOQUIA" }
+    { "id": 1, "name": "BOGOTA", "code": "25001", "department": "CUNDINAMARCA" },
+    { "id": 2, "name": "MEDELLIN", "code": "05001", "department": "ANTIOQUIA" }
   ],
   "pagination": {
     "pageNumber": 1,
@@ -462,7 +462,7 @@ curl https://localhost:7085/api/merchants/export/csv \
   --output merchants-report.csv
 
 # Archivo CSV con estructura:
-# Nombre|Municipio|Teléfono|Correo|Fecha Registro|Estado|Cantidad Establecimientos|Total Ingresos|Cantidad Empleados
+# Nombre|Municipio|Telefono|Correo|Fecha Registro|Estado|Cantidad Establecimientos|Total Ingresos|Cantidad Empleados
 ```
 
 ---
@@ -535,10 +535,10 @@ CommerceApiDotNet/
 ?   ??? Tests.csproj
 ?
 ??? Database/                        # Scripts SQL
-?   ??? 1_Schema.sql                 # Creación de tablas
+?   ??? 1_Schema.sql                 # Creacion de tablas
 ?   ??? 2_Insert_Seed_Data.sql       # Datos iniciales
 ?   ??? 3_Insert_Establishments.sql  # Datos adicionales (opcional)
-?   ??? README.md                    # Documentación BD
+?   ??? README.md                    # Documentacion BD
 ?
 ??? CommerceApiDotNet.sln
 ```
@@ -550,7 +550,7 @@ CommerceApiDotNet/
 | Reto | Funcionalidad | Estado | Tecnología |
 |------|---------------|--------|-----------|
 | **RETO 05** | Login + JWT + Roles | ? Completo | JWT Bearer, BCrypt, RBAC |
-| **RETO 06** | Endpoint Municipios + Caché | ? Completo | IMemoryCache, EF Core |
+| **RETO 06** | Endpoint Municipios + Cache | ? Completo | IMemoryCache, EF Core |
 | **RETO 07** | CRUD Comerciantes | ? Completo | Repositories, DTOs, AutoMapper |
 | **RETO 08** | Reporte CSV | ? Completo | SQL Functions, LINQ, Streaming |
 

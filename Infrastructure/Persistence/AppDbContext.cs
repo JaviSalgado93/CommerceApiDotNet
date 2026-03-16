@@ -202,6 +202,42 @@ namespace Infrastructure.Persistence
                 .WithMany(m => m.Establishments)
                 .HasForeignKey(e => e.MerchantId)
                 .OnDelete(DeleteBehavior.Cascade); // Si se borra Merchant, se borran Establishments
+
+            // Seed Data - Establecimientos (SOLO si no existen)
+            SeedEstablishments(modelBuilder);
+        }
+
+        /// <summary>
+        /// Siembra datos de establecimientos para las pruebas.
+        /// Se crea SOLO si la tabla está vacía.
+        /// </summary>
+        private static void SeedEstablishments(ModelBuilder modelBuilder)
+        {
+            // Solo seedear si no hay datos
+            var establishments = new List<Establishment>
+            {
+                // Merchant 1 (Id=1): Empresa Comercial 1
+                new Establishment { Id = 1, MerchantId = 1, Name = "Sucursal Centro Bogotá", Revenue = 150000.50m, EmployeeCount = 25, CreatedAt = DateTime.UtcNow },
+                new Establishment { Id = 2, MerchantId = 1, Name = "Sucursal Suba Bogotá", Revenue = 120000.75m, EmployeeCount = 18, CreatedAt = DateTime.UtcNow },
+                new Establishment { Id = 3, MerchantId = 1, Name = "Sucursal Chapinero Bogotá", Revenue = 95000.25m, EmployeeCount = 12, CreatedAt = DateTime.UtcNow },
+                
+                // Merchant 2 (Id=2): Empresa Comercial 2
+                new Establishment { Id = 4, MerchantId = 2, Name = "Sucursal Centro Medellín", Revenue = 200000.00m, EmployeeCount = 35, CreatedAt = DateTime.UtcNow },
+                new Establishment { Id = 5, MerchantId = 2, Name = "Sucursal Laureles Medellín", Revenue = 175000.50m, EmployeeCount = 28, CreatedAt = DateTime.UtcNow },
+                
+                // Merchant 3 (Id=3): Empresa Comercial 3
+                new Establishment { Id = 6, MerchantId = 3, Name = "Sucursal Centro Cali", Revenue = 180000.25m, EmployeeCount = 30, CreatedAt = DateTime.UtcNow },
+                new Establishment { Id = 7, MerchantId = 3, Name = "Sucursal San Fernando Cali", Revenue = 165000.75m, EmployeeCount = 25, CreatedAt = DateTime.UtcNow },
+                new Establishment { Id = 8, MerchantId = 3, Name = "Sucursal Puerto Cali", Revenue = 155000.00m, EmployeeCount = 22, CreatedAt = DateTime.UtcNow },
+                
+                // Merchant 4 (Id=4): Empresa Comercial 4
+                new Establishment { Id = 9, MerchantId = 4, Name = "Sucursal Centro Barranquilla", Revenue = 190000.50m, EmployeeCount = 32, CreatedAt = DateTime.UtcNow },
+                new Establishment { Id = 10, MerchantId = 4, Name = "Sucursal Riomar Barranquilla", Revenue = 170000.25m, EmployeeCount = 27, CreatedAt = DateTime.UtcNow },
+                
+                // Merchant 5 (Id=5): Empresa Comercial 5 - Sin establecimientos
+            };
+
+            modelBuilder.Entity<Establishment>().HasData(establishments);
         }
     }
 }
