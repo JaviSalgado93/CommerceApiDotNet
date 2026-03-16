@@ -36,6 +36,12 @@ IF EXISTS (SELECT * FROM sys.objects WHERE type='U' AND name='Establishments')
 IF EXISTS (SELECT * FROM sys.objects WHERE type='U' AND name='Merchants')
     DROP TABLE [dbo].[Merchants];
 
+IF EXISTS (SELECT * FROM sys.objects WHERE type='U' AND name='Municipalities')
+    DROP TABLE [dbo].[Municipalities];
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type='U' AND name='Departments')
+    DROP TABLE [dbo].[Departments];
+
 IF EXISTS (SELECT * FROM sys.objects WHERE type='U' AND name='TokenBlacklist')
     DROP TABLE [dbo].[TokenBlacklist];
 
@@ -114,15 +120,42 @@ CREATE TABLE [dbo].[TokenBlacklist] (
 PRINT 'Table TokenBlacklist created';
 
 -- =====================================================
--- 03. CREATE COMMERCE TABLES
+-- 03. CREATE GEOGRAPHY TABLES (DEPARTAMENTOS Y MUNICIPIOS)
+-- =====================================================
+PRINT '========== CREATING GEOGRAPHY TABLES ==========';
+
+-- Tabla: Departments (Departamentos de Colombia)
+CREATE TABLE [dbo].[Departments] (
+    [Id] INT PRIMARY KEY IDENTITY(1,1),
+    [Code] NVARCHAR(10) NOT NULL UNIQUE,
+    [Name] NVARCHAR(100) NOT NULL UNIQUE,
+    [Region] NVARCHAR(50),
+    [CreatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE()
+);
+PRINT 'Table Departments created';
+
+-- Tabla: Municipalities (Municipios)
+CREATE TABLE [dbo].[Municipalities] (
+    [Id] INT PRIMARY KEY IDENTITY(1,1),
+    [Code] NVARCHAR(10) NOT NULL UNIQUE,
+    [Name] NVARCHAR(100) NOT NULL,
+    [DepartmentId] INT NOT NULL,
+    [CreatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    FOREIGN KEY ([DepartmentId]) REFERENCES [dbo].[Departments]([Id]) ON DELETE CASCADE,
+    CONSTRAINT UQ_Municipality_Name_Department UNIQUE ([Name], [DepartmentId])
+);
+PRINT 'Table Municipalities created';
+
+-- =====================================================
+-- 04. CREATE COMMERCE TABLES
 -- =====================================================
 PRINT '========== CREATING COMMERCE TABLES ==========';
 
--- Tabla: Merchants (Comerciantes)
+-- Tabla: Merchants (Comerciantes) - MODIFICADA para usar MunicipalityId
 CREATE TABLE [dbo].[Merchants] (
     [Id] INT PRIMARY KEY IDENTITY(1,1),
     [Name] NVARCHAR(200) NOT NULL,
-    [Municipality] NVARCHAR(100) NOT NULL,
+    [MunicipalityId] INT NOT NULL,
     [Phone] NVARCHAR(20),
     [Email] NVARCHAR(100),
     [Status] NVARCHAR(20) DEFAULT 'Activo', -- 'Activo' | 'Inactivo'
@@ -130,6 +163,7 @@ CREATE TABLE [dbo].[Merchants] (
     [UpdatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
     [UpdatedBy] NVARCHAR(100) NULL,
     [CreatedByUserId] UNIQUEIDENTIFIER NULL, -- Referencia al usuario que creó el registro
+    FOREIGN KEY ([MunicipalityId]) REFERENCES [dbo].[Municipalities]([Id]),
     FOREIGN KEY ([CreatedByUserId]) REFERENCES [dbo].[Users]([Id])
 );
 PRINT 'Table Merchants created';
@@ -149,7 +183,7 @@ CREATE TABLE [dbo].[Establishments] (
 PRINT 'Table Establishments created';
 
 -- =====================================================
--- 04. CREATE INDEXES FOR PERFORMANCE
+-- 05. CREATE INDEXES FOR PERFORMANCE
 -- =====================================================
 PRINT '========== CREATING INDEXES ==========';
 
@@ -177,9 +211,20 @@ CREATE INDEX IX_TokenBlacklist_UserId ON [dbo].[TokenBlacklist] ([UserId]);
 CREATE INDEX IX_TokenBlacklist_ExpiresAt ON [dbo].[TokenBlacklist] ([ExpiresAt]);
 PRINT 'TokenBlacklist indexes created';
 
+-- Departments Indexes
+CREATE INDEX IX_Departments_Code ON [dbo].[Departments] ([Code]);
+CREATE INDEX IX_Departments_Name ON [dbo].[Departments] ([Name]);
+PRINT 'Departments indexes created';
+
+-- Municipalities Indexes
+CREATE INDEX IX_Municipalities_Code ON [dbo].[Municipalities] ([Code]);
+CREATE INDEX IX_Municipalities_Name ON [dbo].[Municipalities] ([Name]);
+CREATE INDEX IX_Municipalities_DepartmentId ON [dbo].[Municipalities] ([DepartmentId]);
+PRINT 'Municipalities indexes created';
+
 -- Merchants Indexes
 CREATE INDEX IX_Merchants_Status ON [dbo].[Merchants] ([Status]);
-CREATE INDEX IX_Merchants_Municipality ON [dbo].[Merchants] ([Municipality]);
+CREATE INDEX IX_Merchants_MunicipalityId ON [dbo].[Merchants] ([MunicipalityId]);
 CREATE INDEX IX_Merchants_CreatedByUserId ON [dbo].[Merchants] ([CreatedByUserId]);
 PRINT 'Merchants indexes created';
 
@@ -188,7 +233,7 @@ CREATE INDEX IX_Establishments_MerchantId ON [dbo].[Establishments] ([MerchantId
 PRINT 'Establishments indexes created';
 
 -- =====================================================
--- 05. CREATE TRIGGERS FOR AUDIT
+-- 06. CREATE TRIGGERS FOR AUDIT
 -- =====================================================
 PRINT '========== CREATING TRIGGERS ==========';
 
@@ -255,12 +300,13 @@ ON [dbo].[Merchants]
 INSTEAD OF INSERT
 AS
 BEGIN
-    SET NOCOUNT ON;
+    SET NOCOUNT OFF;
     
     INSERT INTO [dbo].[Merchants] 
-    ([Name], [Municipality], [Phone], [Email], [Status], [CreatedAt], [UpdatedAt], [CreatedByUserId], [UpdatedBy])
+    ([Name], [MunicipalityId], [Phone], [Email], [Status], [CreatedAt], [UpdatedAt], [CreatedByUserId], [UpdatedBy])
+    OUTPUT INSERTED.[Id]
     SELECT 
-        [Name], [Municipality], [Phone], [Email], [Status], 
+        [Name], [MunicipalityId], [Phone], [Email], [Status], 
         GETUTCDATE(), GETUTCDATE(), [CreatedByUserId], [UpdatedBy]
     FROM inserted;
 END;
@@ -280,7 +326,7 @@ BEGIN
     UPDATE [dbo].[Merchants]
     SET 
         [Name] = inserted.[Name],
-        [Municipality] = inserted.[Municipality],
+        [MunicipalityId] = inserted.[MunicipalityId],
         [Phone] = inserted.[Phone],
         [Email] = inserted.[Email],
         [Status] = inserted.[Status],
@@ -341,7 +387,7 @@ PRINT '========== ALL TRIGGERS RECREATED SUCCESSFULLY ==========';
 GO
 
 -- =====================================================
--- 06. CREATE FUNCTIONS / STORED PROCEDURES
+-- 07. CREATE FUNCTIONS / STORED PROCEDURES
 -- =====================================================
 PRINT '========== CREATING FUNCTIONS ==========';
 
@@ -356,7 +402,7 @@ RETURN (
     SELECT 
         m.[Id],
         m.[Name] AS 'Nombre o Razón Social',
-        m.[Municipality] AS Municipio,
+        mu.[Name] AS Municipio,
         m.[Phone] AS Teléfono,
         m.[Email] AS 'Correo Electrónico',
         m.[CreatedAt] AS 'Fecha de Registro',
@@ -365,9 +411,10 @@ RETURN (
         ISNULL(SUM(e.[Revenue]), 0) AS 'Total Ingresos',
         ISNULL(SUM(e.[EmployeeCount]), 0) AS 'Cantidad de Empleados'
     FROM [dbo].[Merchants] m
+    LEFT JOIN [dbo].[Municipalities] mu ON m.[MunicipalityId] = mu.[Id]
     LEFT JOIN [dbo].[Establishments] e ON m.[Id] = e.[MerchantId]
     WHERE m.[Status] = 'Activo'
-    GROUP BY m.[Id], m.[Name], m.[Municipality], m.[Phone], m.[Email], m.[CreatedAt], m.[Status]
+    GROUP BY m.[Id], m.[Name], mu.[Name], m.[Phone], m.[Email], m.[CreatedAt], m.[Status]
 );
 GO
 
@@ -377,7 +424,7 @@ GO
 -- //
 
 -- =====================================================
--- 07. VERIFICATION & FINAL VALIDATION
+-- 08. VERIFICATION & FINAL VALIDATION
 -- =====================================================
 PRINT '';
 PRINT '========== VERIFICATION RESULTS ==========';

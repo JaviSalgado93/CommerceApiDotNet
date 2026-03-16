@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.Auth;
+using Application.DTOs.Auth;
 using AutoMapper;
 using Domain.Entities;
 using Infrastructure.Persistence.Entities;
@@ -21,7 +22,7 @@ namespace Infrastructure.Mapping
             CreateMap<RefreshToken, RefreshTokenEntity>().ReverseMap();
 
             // PasswordResetToken mappings
-            CreateMap<PasswordResetToken, PasswordResetTokenEntity>().ReverseMap();            
+            CreateMap<PasswordResetToken, PasswordResetTokenEntity>().ReverseMap();        
         }
     }
 }

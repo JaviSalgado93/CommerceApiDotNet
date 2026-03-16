@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.Merchants;
 using Application.Ports;
+using Domain.Entities;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -113,7 +114,7 @@ namespace Application.Services
                 var merchant = new Merchant
                 {
                     Name = dto.Name,
-                    Municipality = dto.Municipality,
+                    MunicipalityId = dto.MunicipalityId,
                     Phone = dto.Phone,
                     Email = dto.Email,
                     Status = "Activo",
@@ -165,7 +166,7 @@ namespace Application.Services
                 var merchant = new Merchant
                 {
                     Name = dto.Name,
-                    Municipality = dto.Municipality,
+                    MunicipalityId = dto.MunicipalityId,
                     Phone = dto.Phone,
                     Email = dto.Email,
                     Status = dto.Status,
@@ -307,7 +308,9 @@ namespace Application.Services
             {
                 Id = merchant.Id,
                 Name = merchant.Name,
-                Municipality = merchant.Municipality,
+                MunicipalityId = merchant.MunicipalityId,
+                MunicipalityName = merchant.Municipality?.Name,
+                DepartmentName = merchant.Municipality?.Department?.Name,
                 Phone = merchant.Phone,
                 Email = merchant.Email,
                 Status = merchant.Status,

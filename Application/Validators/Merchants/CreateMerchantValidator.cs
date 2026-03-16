@@ -20,12 +20,10 @@ namespace Application.Validators.Merchants
                 .Matches(@"^[a-zA-Z0-9\s\-&áéíóúñÁÉÍÓÚÑ]+$")
                 .WithMessage("El nombre contiene caracteres no permitidos.");
 
-            // Validar Municipality
-            RuleFor(x => x.Municipality)
-                .NotEmpty()
-                .WithMessage("El municipio es requerido.")
-                .Length(2, 100)
-                .WithMessage("El municipio debe tener entre 2 y 100 caracteres.");
+            // Validar MunicipalityId
+            RuleFor(x => x.MunicipalityId)
+                .GreaterThan(0)
+                .WithMessage("El ID del municipio es requerido y debe ser válido.");
 
             // Validar Phone (opcional pero si se proporciona, debe ser válido)
             RuleFor(x => x.Phone)

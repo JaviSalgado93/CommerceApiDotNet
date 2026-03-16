@@ -181,7 +181,7 @@ namespace Api.Controllers
         /// <param name="cancellationToken">Token de cancelación</param>
         /// <returns>Comerciante creado</returns>
         [HttpPost]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "1")] // Solo Admin pueden
         public async Task<ActionResult<ApiResponse>> CreateMerchant(
             [FromBody] CreateMerchantDto dto,
             CancellationToken cancellationToken)
@@ -245,7 +245,7 @@ namespace Api.Controllers
         /// <param name="cancellationToken">Token de cancelación</param>
         /// <returns>Comerciante actualizado</returns>
         [HttpPut("{id}")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "1")] // Solo Admin pueden
         public async Task<ActionResult<ApiResponse>> UpdateMerchant(
             int id,
             [FromBody] UpdateMerchantDto dto,
@@ -317,10 +317,10 @@ namespace Api.Controllers
         /// <param name="cancellationToken">Token de cancelación</param>
         /// <returns>Comerciante con estado actualizado</returns>
         [HttpPatch("{id}/status")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "1")] // Solo Admin pueden
         public async Task<ActionResult<ApiResponse>> UpdateMerchantStatus(
             int id,
-            [FromBody] dynamic statusData,
+            [FromBody] UpdateStatusRequest statusRequest,
             CancellationToken cancellationToken)
         {
             _logger.LogInformation("PATCH /api/merchants/{Id}/status - Actualizando estado de comerciante {Id}", id);
@@ -334,10 +334,7 @@ namespace Api.Controllers
                     ));
                 }
 
-                // Extraer status del objeto dinámico
-                string? status = statusData?.status;
-
-                if (string.IsNullOrWhiteSpace(status))
+                if (statusRequest == null || string.IsNullOrWhiteSpace(statusRequest.Status))
                 {
                     return BadRequest(ApiResponseHelper.BadRequest(
                         message: "El campo 'status' es requerido"
@@ -348,11 +345,11 @@ namespace Api.Controllers
                 var usernameClaim = User.FindFirst(ClaimTypes.Name);
                 var updatedBy = usernameClaim?.Value ?? "Sistema";
 
-                var merchant = await _merchantService.UpdateStatusAsync(id, status, updatedBy, cancellationToken);
+                var merchant = await _merchantService.UpdateStatusAsync(id, statusRequest.Status, updatedBy, cancellationToken);
 
                 var response = ApiResponseHelper.Success(
                     data: merchant,
-                    message: $"Estado actualizado a '{status}' exitosamente"
+                    message: $"Estado actualizado a '{statusRequest.Status}' exitosamente"
                 );
 
                 return Ok(response);
@@ -388,7 +385,7 @@ namespace Api.Controllers
         /// <param name="cancellationToken">Token de cancelación</param>
         /// <returns>Confirmación de eliminación</returns>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "1")] // Solo Admin pueden
         public async Task<IActionResult> DeleteMerchant(int id, CancellationToken cancellationToken)
         {
             _logger.LogInformation("DELETE /api/merchants/{Id} - Eliminando comerciante {Id}", id);
@@ -442,7 +439,7 @@ namespace Api.Controllers
         /// <param name="cancellationToken">Token de cancelación</param>
         /// <returns>Archivo CSV descargable</returns>
         [HttpGet("reports/export")]
-        [Authorize(Roles = "Administrador")]
+        [Authorize(Roles = "1")] // Solo Admin pueden
         public async Task<IActionResult> ExportMerchantsToCSV(CancellationToken cancellationToken)
         {
             _logger.LogInformation("GET /api/merchants/reports/export - Exportando comerciantes a CSV");
@@ -490,12 +487,38 @@ namespace Api.Controllers
             csv.AppendLine("Nombre o Razón Social|Municipio|Teléfono|Correo Electrónico|Fecha de Registro|Estado|Cantidad de Establecimientos|Total Ingresos|Cantidad de Empleados");
 
             // Datos
-            foreach (var merchant in report)
+            foreach (var item in report)
             {
-                csv.AppendLine($"{merchant.Nombre_o_Razón_Social}|{merchant.Municipio}|{merchant.Teléfono}|{merchant.Correo_Electrónico}|{merchant.Fecha_de_Registro:yyyy-MM-dd}|{merchant.Estado}|{merchant.Cantidad_de_Establecimientos}|{merchant.Total_Ingresos}|{merchant.Cantidad_de_Empleados}");
+                // Usar reflexión para obtener propiedades del tipo anónimo
+                var type = ((object)item).GetType();
+                
+                var nombre = type.GetProperty("Nombre_o_Razón_Social")?.GetValue(item) ?? "";
+                var municipio = type.GetProperty("Municipio")?.GetValue(item) ?? "";
+                var telefono = type.GetProperty("Teléfono")?.GetValue(item) ?? "";
+                var correo = type.GetProperty("Correo_Electrónico")?.GetValue(item) ?? "";
+                var fecha = type.GetProperty("Fecha_de_Registro")?.GetValue(item);
+                var estado = type.GetProperty("Estado")?.GetValue(item) ?? "";
+                var establecimientos = type.GetProperty("Cantidad_de_Establecimientos")?.GetValue(item) ?? 0;
+                var ingresos = type.GetProperty("Total_Ingresos")?.GetValue(item) ?? 0;
+                var empleados = type.GetProperty("Cantidad_de_Empleados")?.GetValue(item) ?? 0;
+
+                var fechaFormato = fecha is DateTime dt ? dt.ToString("yyyy-MM-dd") : "";
+
+                csv.AppendLine($"{nombre}|{municipio}|{telefono}|{correo}|{fechaFormato}|{estado}|{establecimientos}|{ingresos}|{empleados}");
             }
 
             return csv.ToString();
         }
+    }
+
+    /// <summary>
+    /// Request body para actualizar el estado de un comerciante.
+    /// </summary>
+    public class UpdateStatusRequest
+    {
+        /// <summary>
+        /// Nuevo estado del comerciante (Activo o Inactivo).
+        /// </summary>
+        public string Status { get; set; } = string.Empty;
     }
 }

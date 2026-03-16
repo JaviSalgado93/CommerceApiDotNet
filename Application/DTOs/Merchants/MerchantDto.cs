@@ -17,9 +17,19 @@
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Municipio donde opera.
+        /// ID del municipio donde opera.
         /// </summary>
-        public string Municipality { get; set; } = string.Empty;
+        public int MunicipalityId { get; set; }
+
+        /// <summary>
+        /// Nombre del municipio (información auxiliar).
+        /// </summary>
+        public string? MunicipalityName { get; set; }
+
+        /// <summary>
+        /// Nombre del departamento (información auxiliar).
+        /// </summary>
+        public string? DepartmentName { get; set; }
 
         /// <summary>
         /// Teléfono de contacto.

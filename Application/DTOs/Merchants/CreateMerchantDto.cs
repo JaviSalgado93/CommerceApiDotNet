@@ -13,10 +13,10 @@
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Municipio donde opera el comerciante.
+        /// ID del municipio donde opera el comerciante.
         /// Campo requerido.
         /// </summary>
-        public string Municipality { get; set; } = string.Empty;
+        public int MunicipalityId { get; set; }
 
         /// <summary>
         /// Teléfono de contacto del comerciante.

@@ -41,12 +41,12 @@ namespace Infrastructure.Persistence.Repositories
 
             try
             {
-                // Base query con LINQ Join
-                var baseQuery = from m in _context.Merchants
-                               join u in _context.Users
-                                   on m.CreatedByUserId equals u.Id into userGroup
-                               from user in userGroup.DefaultIfEmpty()
-                               select new { Merchant = m, User = user };
+                // Base query con Include para cargar Municipality y su Department
+                var query = _context.Merchants
+                    .Include(m => m.Municipality)
+                    .ThenInclude(mu => mu.Department)
+                    .Include(m => m.Establishments)
+                    .AsQueryable();
 
                 // Aplicar filtros al merchant
                 if (!string.IsNullOrWhiteSpace(filterValue))
@@ -54,27 +54,25 @@ namespace Infrastructure.Persistence.Repositories
                     filterValue = filterValue.ToLower();
                     filterBy = filterBy?.ToLower();
 
-                    baseQuery = filterBy switch
+                    query = filterBy switch
                     {
-                        "name" => baseQuery.Where(x => x.Merchant.Name.Contains(filterValue)),
-                        "municipality" => baseQuery.Where(x => x.Merchant.Municipality.Contains(filterValue)),
-                        "status" => baseQuery.Where(x => x.Merchant.Status == filterValue),
-                        _ => baseQuery
+                        "name" => query.Where(m => m.Name.Contains(filterValue)),
+                        "municipality" => query.Where(m => m.Municipality != null && m.Municipality.Name.Contains(filterValue)),
+                        "status" => query.Where(m => m.Status == filterValue),
+                        _ => query
                     };
 
                     _logger.LogDebug("Filtro aplicado: {FilterBy} = {FilterValue}", filterBy, filterValue);
                 }
 
                 // Contar total antes de paginar
-                var totalRecords = await baseQuery.CountAsync(cancellationToken);
+                var totalRecords = await query.CountAsync(cancellationToken);
 
-                // Aplicar paginación y cargar establecimientos
-                var data = await baseQuery
-                    .OrderByDescending(x => x.Merchant.CreatedAt)
+                // Aplicar paginación
+                var data = await query
+                    .OrderByDescending(m => m.CreatedAt)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
-                    .Select(x => x.Merchant)
-                    .Include(m => m.Establishments)
                     .ToListAsync(cancellationToken);
 
                 _logger.LogInformation(
@@ -92,7 +90,7 @@ namespace Infrastructure.Persistence.Repositories
 
         /// <summary>
         /// Obtiene un comerciante por su ID.
-        /// Utiliza LINQ Join para cargar el usuario creador.
+        /// Carga Municipality, Department y Establishments.
         /// </summary>
         public async Task<Merchant?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
@@ -100,30 +98,16 @@ namespace Infrastructure.Persistence.Repositories
 
             try
             {
-                var merchantWithUser = await (from m in _context.Merchants
-                                             join u in _context.Users
-                                                 on m.CreatedByUserId equals u.Id into userGroup
-                                             from user in userGroup.DefaultIfEmpty()
-                                             where m.Id == id
-                                             select new { Merchant = m, User = user })
-                    .FirstOrDefaultAsync(cancellationToken);
+                var merchant = await _context.Merchants
+                    .Include(m => m.Municipality)
+                    .ThenInclude(mu => mu.Department)
+                    .Include(m => m.Establishments)
+                    .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
 
-                if (merchantWithUser?.Merchant == null)
+                if (merchant == null)
                 {
                     _logger.LogWarning("Comerciante no encontrado: {Id}", id);
                     return null;
-                }
-
-                // Cargar establecimientos por separado
-                var merchant = merchantWithUser.Merchant;
-                await _context.Entry(merchant)
-                    .Collection(m => m.Establishments)
-                    .LoadAsync(cancellationToken);
-
-                // Asignar usuario si existe - Usar AutoMapper para convertir UserEntity → User
-                if (merchantWithUser.User != null)
-                {
-                    merchant.CreatedByUser = _mapper.Map<User>(merchantWithUser.User);
                 }
 
                 _logger.LogInformation("Comerciante obtenido exitosamente: {Id} - {Name}", id, merchant.Name);
@@ -149,7 +133,14 @@ namespace Infrastructure.Persistence.Repositories
                 merchant.UpdatedAt = DateTime.UtcNow;
 
                 _context.Merchants.Add(merchant);
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    await _context.Entry(merchant).ReloadAsync(cancellationToken);
+                }
 
                 _logger.LogInformation("Comerciante creado exitosamente con ID: {Id}", merchant.Id);
                 return merchant;
@@ -283,8 +274,8 @@ namespace Infrastructure.Persistence.Repositories
 
             try
             {
-                var municipalities = await _context.Merchants
-                    .Select(m => m.Municipality)
+                var municipalities = await _context.Municipalities
+                    .Select(m => m.Name)
                     .Distinct()
                     .OrderBy(m => m)
                     .ToListAsync(cancellationToken);
@@ -312,21 +303,23 @@ namespace Infrastructure.Persistence.Repositories
                 var result = await _context.Merchants
                     .Where(m => m.Status == "Activo")
                     .Include(m => m.Establishments)
+                    .Include(m => m.Municipality)
                     .Select(m => new
                     {
                         Nombre_o_Razón_Social = m.Name,
-                        Municipio = m.Municipality,
+                        Municipio = m.Municipality.Name,
                         Teléfono = m.Phone ?? string.Empty,
                         Correo_Electrónico = m.Email ?? string.Empty,
                         Fecha_de_Registro = m.CreatedAt,
                         Estado = m.Status,
-                        Cantidad_de_Empleados = 0
+                        Cantidad_de_Establecimientos = m.Establishments.Count,
+                        Total_Ingresos = m.Establishments.Sum(e => e.Revenue),
+                        Cantidad_de_Empleados = m.Establishments.Sum(e => e.EmployeeCount)
                     })
-                    .Cast<dynamic>()
                     .ToListAsync(cancellationToken);
 
                 _logger.LogInformation("Reporte obtenido exitosamente: {Count} comerciantes activos", result.Count);
-                return result;
+                return result.Cast<dynamic>();
             }
             catch (Exception ex)
             {

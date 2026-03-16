@@ -1,4 +1,6 @@
-﻿namespace Application.Ports
+﻿using Domain.Entities;
+
+namespace Application.Ports
 {
     /// <summary>
     /// Puerto (Interfaz) para el repositorio de Merchants.

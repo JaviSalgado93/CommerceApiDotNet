@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Domain.Entities;
 using Infrastructure.Persistence.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence
 {
@@ -20,6 +22,8 @@ namespace Infrastructure.Persistence
         public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
         public DbSet<PasswordResetTokenEntity> PasswordResetTokens { get; set; }
         public DbSet<TokenBlacklistEntity> TokenBlacklist { get; set; }
+        public DbSet<Department> Departments { get; set; }
+        public DbSet<Municipality> Municipalities { get; set; }
         public DbSet<Merchant> Merchants { get; set; }
         public DbSet<Establishment> Establishments { get; set; }
         #endregion
@@ -123,8 +127,45 @@ namespace Infrastructure.Persistence
                 .HasForeignKey(tb => tb.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Merchants
+            // Departments
+            modelBuilder.Entity<Department>()
+                .ToTable("Departments")
+                .HasKey(d => d.Id);
+
+            modelBuilder.Entity<Department>()
+                .Property(d => d.Id)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Department>()
+                .HasIndex(d => d.Code)
+                .IsUnique();
+
+            modelBuilder.Entity<Department>()
+                .HasIndex(d => d.Name)
+                .IsUnique();
+
+            // Municipalities
+            modelBuilder.Entity<Municipality>()
+                .ToTable("Municipalities")
+                .HasKey(m => m.Id);
+
+            modelBuilder.Entity<Municipality>()
+                .Property(m => m.Id)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Municipality>()
+                .HasIndex(m => m.Code)
+                .IsUnique();
+
+            modelBuilder.Entity<Municipality>()
+                .HasOne(m => m.Department)
+                .WithMany(d => d.Municipalities)
+                .HasForeignKey(m => m.DepartmentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Merchants - IMPORTANTE: Tiene trigger INSTEAD OF INSERT
             modelBuilder.Entity<Merchant>()
+                .ToTable(tb => tb.HasTrigger("tr_Merchants_Insert"))
                 .HasKey(m => m.Id);
 
             modelBuilder.Entity<Merchant>()
@@ -135,6 +176,12 @@ namespace Infrastructure.Persistence
                 .HasIndex(m => m.Email)
                 .IsUnique()
                 .HasFilter("[Email] IS NOT NULL"); // Permite múltiples NULLs
+
+            modelBuilder.Entity<Merchant>()
+                .HasOne(m => m.Municipality)
+                .WithMany(mu => mu.Merchants)
+                .HasForeignKey(m => m.MunicipalityId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Merchant>()
                 .HasOne(m => m.CreatedByUser)

@@ -1,171 +1,188 @@
 /****** 
 Script: CommerceAPI - Seed Data
 Creado: 2026-03-14
-Descripción: Inserta datos de prueba con nuevos roles
+Descripción: Inserta datos de prueba: Departamentos, Municipios, Roles, Usuarios, Comerciantes y Establecimientos
 Base de datos: CommerceApiDotNet
-Nota: Ejecutar DESPUÉS de schema.sql
-ACTUALIZACIÓN: Roles agregados (Administrador, Auxiliar de Registro)
-Advertencia: Los passwords están en plain para desarrollo. En producción deben estar hasheados con BCrypt.
+Nota: Ejecutar DESPUÉS de 1_Schema.sql
 ******/
 
 USE CommerceApiDotNet;
 
-PRINT '========== INSERTING SEED DATA ==========';
+BEGIN TRANSACTION;
 
--- =====================================================
--- 01. INSERT ROLES (Catálogo base)
--- =====================================================
-PRINT '========== INSERTING ROLES ==========';
+BEGIN TRY
+    PRINT '========== INICIANDO INSERCIÓN DE DATOS ==========';
 
-IF NOT EXISTS (SELECT * FROM [dbo].[Roles] WHERE [Name] = 'Administrador')
-BEGIN
-    INSERT INTO [dbo].[Roles] ([Name], [Description], [IsActive])
-    VALUES ('Administrador', 'Acceso total al sistema y gestión de usuarios', 1);
-    PRINT 'Role "Administrador" created';
-END
-ELSE
-BEGIN
-    PRINT 'Role "Administrador" already exists';
-END
+    -- =====================================================
+    -- 01. INSERT DEPARTMENTS (5 departamentos)
+    -- =====================================================
+    PRINT '--- INSERTING DEPARTMENTS ---';
 
-IF NOT EXISTS (SELECT * FROM [dbo].[Roles] WHERE [Name] = 'Auxiliar de Registro')
-BEGIN
-    INSERT INTO [dbo].[Roles] ([Name], [Description], [IsActive])
-    VALUES ('Auxiliar de Registro', 'Acceso para registro y gestión básica de comerciantes', 1);
-    PRINT 'Role "Auxiliar de Registro" created';
-END
-ELSE
-BEGIN
-    PRINT 'Role "Auxiliar de Registro" already exists';
-END
-
-PRINT 'Roles verification:';
-SELECT [Id], [Name], [Description], [IsActive] FROM [dbo].[Roles];
-
--- =====================================================
--- 02. INSERT ADMIN USER (con nuevo Rol)
--- =====================================================
-PRINT '========== INSERTING ADMIN USER ==========';
-
-DECLARE @AdminRoleId INT;
-SELECT @AdminRoleId = [Id] FROM [dbo].[Roles] WHERE [Name] = 'Administrador';
-
-IF NOT EXISTS (SELECT * FROM [dbo].[Users] WHERE [Username] = 'admin')
-BEGIN
-    INSERT INTO [dbo].[Users]
-    ([Id], [Username], [Email], [PasswordHash], [FirstName], [LastName], [RoleId], [IsActive])
+    INSERT INTO [dbo].[Departments] ([Code], [Name], [Region])
     VALUES
-    (NEWID(), 'admin', 'admin@commerce-api.com',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNvreop4XUPR2', -- Password: Admin123! (BCrypt)
-    'Administrador', 'Sistema', @AdminRoleId, 1);
+    ('25', 'CUNDINAMARCA', 'ANDINA'),
+    ('05', 'ANTIOQUIA', 'NOROCCIDENTE'),
+    ('76', 'VALLE DEL CAUCA', 'PACÍFICA'),
+    ('08', 'ATLÁNTICO', 'CARIBE'),
+    ('13', 'BOLÍVAR', 'CARIBE');
+
+    PRINT '5 Departamentos insertados correctamente';
+
+    -- =====================================================
+    -- 02. INSERT MUNICIPALITIES (5 municipios)
+    -- =====================================================
+    PRINT '--- INSERTING MUNICIPALITIES ---';
+
+    INSERT INTO [dbo].[Municipalities] ([Code], [Name], [DepartmentId])
+    SELECT '25001', 'BOGOTÁ', [Id] FROM [dbo].[Departments] WHERE [Code] = '25'
+    UNION ALL
+    SELECT '05001', 'MEDELLÍN', [Id] FROM [dbo].[Departments] WHERE [Code] = '05'
+    UNION ALL
+    SELECT '76001', 'CALI', [Id] FROM [dbo].[Departments] WHERE [Code] = '76'
+    UNION ALL
+    SELECT '08001', 'BARRANQUILLA', [Id] FROM [dbo].[Departments] WHERE [Code] = '08'
+    UNION ALL
+    SELECT '13001', 'CARTAGENA', [Id] FROM [dbo].[Departments] WHERE [Code] = '13';
+
+    PRINT '5 Municipios insertados correctamente';
+
+    -- =====================================================
+    -- 03. INSERT ROLES
+    -- =====================================================
+    PRINT '--- INSERTING ROLES ---';
+
+    IF NOT EXISTS (SELECT * FROM [dbo].[Roles] WHERE [Name] = 'Administrador')
+    BEGIN
+        INSERT INTO [dbo].[Roles] ([Name], [Description], [IsActive])
+        VALUES ('Administrador', 'Acceso total al sistema y gestión de usuarios', 1);
+        PRINT 'Role "Administrador" created';
+    END
+
+    IF NOT EXISTS (SELECT * FROM [dbo].[Roles] WHERE [Name] = 'Auxiliar de Registro')
+    BEGIN
+        INSERT INTO [dbo].[Roles] ([Name], [Description], [IsActive])
+        VALUES ('Auxiliar de Registro', 'Acceso para registro y gestión básica de comerciantes', 1);
+        PRINT 'Role "Auxiliar de Registro" created';
+    END
+
+    -- =====================================================
+    -- 04. INSERT USERS
+    -- =====================================================
+    PRINT '--- INSERTING USERS ---';
+
+    DECLARE @AdminRoleId INT;
+    SELECT @AdminRoleId = [Id] FROM [dbo].[Roles] WHERE [Name] = 'Administrador';
+
+    IF NOT EXISTS (SELECT * FROM [dbo].[Users] WHERE [Username] = 'admin')
+    BEGIN
+        INSERT INTO [dbo].[Users]
+        ([Id], [Username], [Email], [PasswordHash], [FirstName], [LastName], [RoleId], [IsActive])
+        VALUES
+        (NEWID(), 'admin', 'admin@commerce-api.com',
+        '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNvreop4XUPR2',
+        'Administrador', 'Sistema', @AdminRoleId, 1);
+        PRINT 'User "admin" created';
+    END
+
+    DECLARE @AuxiliarRoleId INT;
+    SELECT @AuxiliarRoleId = [Id] FROM [dbo].[Roles] WHERE [Name] = 'Auxiliar de Registro';
+
+    IF NOT EXISTS (SELECT * FROM [dbo].[Users] WHERE [Username] = 'auxiliar')
+    BEGIN
+        INSERT INTO [dbo].[Users]
+        ([Id], [Username], [Email], [PasswordHash], [FirstName], [LastName], [RoleId], [IsActive])
+        VALUES
+        (NEWID(), 'auxiliar', 'auxiliar@commerce-api.com',
+        '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNvreop4XUPR2',
+        'Auxiliar', 'Registro', @AuxiliarRoleId, 1);
+        PRINT 'User "auxiliar" created';
+    END
+
+    -- =====================================================
+    -- 05. INSERT MERCHANTS (con MunicipalityId)
+    -- =====================================================
+    PRINT '--- INSERTING MERCHANTS ---';
+
+    DECLARE @AdminUserId UNIQUEIDENTIFIER;
+    SELECT @AdminUserId = [Id] FROM [dbo].[Users] WHERE [Username] = 'admin';
+
+    DECLARE @BogotaId INT, @MedellinId INT, @CaliId INT, @BarranquillaId INT, @CartagenaId INT;
     
-    PRINT 'User "admin" created with Administrador role';
-END
-ELSE
-BEGIN
-    PRINT 'User "admin" already exists';
-END
+    SELECT @BogotaId = [Id] FROM [dbo].[Municipalities] WHERE [Name] = 'BOGOTÁ';
+    SELECT @MedellinId = [Id] FROM [dbo].[Municipalities] WHERE [Name] = 'MEDELLÍN';
+    SELECT @CaliId = [Id] FROM [dbo].[Municipalities] WHERE [Name] = 'CALI';
+    SELECT @BarranquillaId = [Id] FROM [dbo].[Municipalities] WHERE [Name] = 'BARRANQUILLA';
+    SELECT @CartagenaId = [Id] FROM [dbo].[Municipalities] WHERE [Name] = 'CARTAGENA';
 
--- =====================================================
--- 03. INSERT ADDITIONAL USERS (Auxiliar de Registro)
--- =====================================================
-PRINT '========== INSERTING AUXILIARY USER ==========';
-
-DECLARE @AuxiliarRoleId INT;
-SELECT @AuxiliarRoleId = [Id] FROM [dbo].[Roles] WHERE [Name] = 'Auxiliar de Registro';
-
-IF NOT EXISTS (SELECT * FROM [dbo].[Users] WHERE [Username] = 'auxiliar')
-BEGIN
-    INSERT INTO [dbo].[Users]
-    ([Id], [Username], [Email], [PasswordHash], [FirstName], [LastName], [RoleId], [IsActive])
+    INSERT INTO [dbo].[Merchants] ([Name], [MunicipalityId], [Phone], [Email], [Status], [CreatedByUserId])
     VALUES
-    (NEWID(), 'auxiliar', 'auxiliar@commerce-api.com',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNvreop4XUPR2', -- Password: Admin123! (BCrypt)
-    'Auxiliar', 'Registro', @AuxiliarRoleId, 1);
-    
-    PRINT 'User "auxiliar" created with Auxiliar de Registro role';
-END
-ELSE
-BEGIN
-    PRINT 'User "auxiliar" already exists';
-END
+    ('Empresa Comercial 1', @BogotaId, '+573001234567', 'empresa1@example.com', 'Activo', @AdminUserId),
+    ('Empresa Comercial 2', @MedellinId, '+573007654321', 'empresa2@example.com', 'Activo', @AdminUserId),
+    ('Empresa Comercial 3', @CaliId, '+573002468135', 'empresa3@example.com', 'Activo', @AdminUserId),
+    ('Empresa Comercial 4', @BarranquillaId, '+573009753124', 'empresa4@example.com', 'Activo', @AdminUserId),
+    ('Empresa Comercial 5', @CartagenaId, '+573005555555', 'empresa5@example.com', 'Inactivo', @AdminUserId);
 
--- =====================================================
--- 04. INSERT MERCHANTS (5 registros)
--- =====================================================
-DECLARE @AdminUserId UNIQUEIDENTIFIER;
-SELECT @AdminUserId = [Id] FROM [dbo].[Users] WHERE [Username] = 'admin';
+    PRINT '5 Merchants inserted';
 
-PRINT '========== INSERTING MERCHANTS ==========';
+    -- =====================================================
+    -- 06. INSERT ESTABLISHMENTS
+    -- =====================================================
+    PRINT '--- INSERTING ESTABLISHMENTS ---';
 
-INSERT INTO [dbo].[Merchants] ([Name], [Municipality], [Phone], [Email], [Status], [CreatedByUserId])
-VALUES
-('Empresa Comercial 1', 'Bogotá', '+573001234567', 'empresa1@example.com', 'Activo', @AdminUserId),
-('Empresa Comercial 2', 'Medellín', '+573007654321', 'empresa2@example.com', 'Activo', @AdminUserId),
-('Empresa Comercial 3', 'Cali', '+573002468135', 'empresa3@example.com', 'Activo', @AdminUserId),
-('Empresa Comercial 4', 'Barranquilla', '+573009753124', 'empresa4@example.com', 'Activo', @AdminUserId),
-('Empresa Comercial 5', 'Cartagena', '+573005555555', 'empresa5@example.com', 'Inactivo', @AdminUserId);
+    INSERT INTO [dbo].[Establishments] ([MerchantId], [Name], [Revenue], [EmployeeCount])
+    VALUES
+    (1, 'Sucursal Centro Bogotá', 150000.50, 25),
+    (1, 'Sucursal Suba Bogotá', 120000.75, 18),
+    (1, 'Sucursal Chapinero Bogotá', 95000.25, 12),
+    (2, 'Sucursal Centro Medellín', 200000.00, 35),
+    (2, 'Sucursal Laureles Medellín', 175000.50, 28),
+    (3, 'Sucursal Centro Cali', 180000.25, 30),
+    (3, 'Sucursal San Fernando Cali', 165000.75, 25),
+    (3, 'Sucursal Puerto Cali', 155000.00, 22),
+    (4, 'Sucursal Centro Barranquilla', 190000.50, 32),
+    (4, 'Sucursal Riomar Barranquilla', 170000.25, 27);
 
-PRINT 'Merchants inserted: 5 records';
+    PRINT '10 Establishments inserted';
 
--- =====================================================
--- 05. INSERT ESTABLISHMENTS (10 registros distribuidos)
--- =====================================================
-PRINT '========== INSERTING ESTABLISHMENTS ==========';
+    -- =====================================================
+    -- 07. FINAL VERIFICATION
+    -- =====================================================
+    PRINT '';
+    PRINT '========== SEED DATA VERIFICATION ==========';
 
--- Comerciante 1 (3 establecimientos)
-INSERT INTO [dbo].[Establishments] ([MerchantId], [Name], [Revenue], [EmployeeCount])
-VALUES
-(1, 'Sucursal Centro Bogotá', 150000.50, 25),
-(1, 'Sucursal Suba Bogotá', 120000.75, 18),
-(1, 'Sucursal Chapinero Bogotá', 95000.25, 12);
+    SELECT 'Departments' AS TableName, COUNT(*) AS RecordCount FROM [dbo].[Departments]
+    UNION ALL
+    SELECT 'Municipalities', COUNT(*) FROM [dbo].[Municipalities]
+    UNION ALL
+    SELECT 'Roles', COUNT(*) FROM [dbo].[Roles]
+    UNION ALL
+    SELECT 'Users', COUNT(*) FROM [dbo].[Users]
+    UNION ALL
+    SELECT 'Merchants', COUNT(*) FROM [dbo].[Merchants]
+    UNION ALL
+    SELECT 'Establishments', COUNT(*) FROM [dbo].[Establishments];
 
--- Comerciante 2 (2 establecimientos)
-INSERT INTO [dbo].[Establishments] ([MerchantId], [Name], [Revenue], [EmployeeCount])
-VALUES
-(2, 'Sucursal Centro Medellín', 200000.00, 35),
-(2, 'Sucursal Laureles Medellín', 175000.50, 28);
+    PRINT '';
+    PRINT 'Users with Roles:';
+    SELECT u.[Id], u.[Username], u.[Email], r.[Name] AS [Role]
+    FROM [dbo].[Users] u
+    INNER JOIN [dbo].[Roles] r ON u.[RoleId] = r.[Id];
 
--- Comerciante 3 (3 establecimientos)
-INSERT INTO [dbo].[Establishments] ([MerchantId], [Name], [Revenue], [EmployeeCount])
-VALUES
-(3, 'Sucursal Centro Cali', 180000.25, 30),
-(3, 'Sucursal San Fernando Cali', 165000.75, 25),
-(3, 'Sucursal Puerto Cali', 155000.00, 22);
+    PRINT '';
+    PRINT 'Merchants with Municipalities:';
+    SELECT m.[Id], m.[Name], mu.[Name] AS Municipality, d.[Name] AS Department
+    FROM [dbo].[Merchants] m
+    INNER JOIN [dbo].[Municipalities] mu ON m.[MunicipalityId] = mu.[Id]
+    INNER JOIN [dbo].[Departments] d ON mu.[DepartmentId] = d.[Id];
 
--- Comerciante 4 (2 establecimientos)
-INSERT INTO [dbo].[Establishments] ([MerchantId], [Name], [Revenue], [EmployeeCount])
-VALUES
-(4, 'Sucursal Centro Barranquilla', 190000.50, 32),
-(4, 'Sucursal Riomar Barranquilla', 170000.25, 27);
+    COMMIT TRANSACTION;
+    PRINT '';
+    PRINT '========== SEED DATA INSERTION COMPLETED SUCCESSFULLY ==========';
 
--- Comerciante 5 (0 establecimientos - está inactivo)
-
-PRINT 'Establishments inserted: 10 records';
-
--- =====================================================
--- 06. FINAL VERIFICATION
--- =====================================================
-PRINT '';
-PRINT '========== SEED DATA VERIFICATION ==========';
-
-SELECT 'Roles' AS TableName, COUNT(*) AS RecordCount FROM [dbo].[Roles]
-UNION ALL
-SELECT 'Users', COUNT(*) FROM [dbo].[Users]
-UNION ALL
-SELECT 'Merchants', COUNT(*) FROM [dbo].[Merchants]
-UNION ALL
-SELECT 'Establishments', COUNT(*) FROM [dbo].[Establishments];
-
-PRINT '';
-PRINT 'Users with Roles:';
-SELECT u.[Id], u.[Username], u.[Email], u.[FirstName], u.[LastName], r.[Name] AS [Role], u.[IsActive]
-FROM [dbo].[Users] u
-INNER JOIN [dbo].[Roles] r ON u.[RoleId] = r.[Id];
-
-PRINT '';
-PRINT 'Sample - Active Merchants Report:';
-SELECT * FROM [dbo].[fn_GetActiveMerchantsReport]();
-
-PRINT '';
-PRINT '========== SEED DATA INSERTION COMPLETED ==========';
+END TRY
+BEGIN CATCH
+    ROLLBACK TRANSACTION;
+    PRINT 'ERROR:';
+    PRINT ERROR_MESSAGE();
+    THROW;
+END CATCH;
