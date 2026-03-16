@@ -1,55 +1,55 @@
-# ??? Commerce API .NET - Prueba T�cnica
+# 🏗️ Commerce API .NET - Prueba Técnica
 
-Una **API REST para gesti�n de comerciantes** desarrollada con **.NET 8** que resuelve una prueba t�cnica fullstack. Implementa **Arquitectura Hexagonal (Puertos y Adaptadores)** con autenticaci�n JWT, gesti�n de comerciantes y reportes de datos.
+Una **API REST para gestión de comerciantes** desarrollada con **.NET 8** que resuelve una prueba técnica fullstack. Implementa **Arquitectura Hexagonal (Puertos y Adaptadores)** con autenticación JWT, gestión de comerciantes y reportes de datos.
 
 ---
 
-## ?? Tabla de Contenidos
+## 📑 Tabla de Contenidos
 
 - [Sobre esta Prueba](#sobre-esta-prueba)
 - [Retos Implementados](#retos-implementados)
 - [Base de Datos](#base-de-datos)
 - [Arquitectura](#arquitectura)
 - [Requisitos](#requisitos)
-- [Instalaci�n](#instalaci�n)
-- [Configuraci�n](#configuraci�n)
+- [Instalación](#instalación)
+- [Configuración](#configuración)
 - [API Endpoints](#api-endpoints)
 - [Pruebas](#pruebas)
 - [Estructura del Proyecto](#estructura-del-proyecto)
 
 ---
 
-## ?? Sobre esta Prueba
+## 🎯 Sobre esta Prueba
 
-Esta es una **evaluaci�n t�cnica fullstack .NET** que simula un escenario real donde:
+Esta es una **evaluación técnica fullstack .NET** que simula un escenario real donde:
 
-> *"En el creciente mundo empresarial y comercial, las empresas son los nodos medulares de la econom�a. Por eso es imprescindible lograr disponer de los datos suficientes para analizar el patrimonio fluctuante del mercado, raz�n por la cual el arenal de comercio desea tener a su disposici�n una herramienta que le permita conocer de forma r�pida y centralizada la informaci�n de los comerciantes y sus respectivos establecimientos."*
+> *"En el creciente mundo empresarial y comercial, las empresas son los nodos medulares de la economía. Por eso es imprescindible lograr disponer de los datos suficientes para analizar el patrimonio fluctuante del mercado, razón por la cual el arenal de comercio desea tener a su disposición una herramienta que le permita conocer de forma rápida y centralizada la información de los comerciantes y sus respectivos establecimientos."*
 
-**Objetivo**: Construir una API que condense la informaci�n de comerciantes y establecimientos con el objetivo de apoyar los procesos operativos esenciales de la agregaci�n nacional de comercio.
+**Objetivo**: Construir una API que condense la información de comerciantes y establecimientos con el objetivo de apoyar los procesos operativos esenciales de la agregación nacional de comercio.
 
-**Duraci�n**: 1 d�a de desarrollo
+**Duración**: 1 día de desarrollo
 
 ---
 
-## ? Retos Implementados
+## ✅ Retos Implementados
 
 ### RETO 05: Web API - Seguridad
-**Autenticaci�n y Autorizaci�n con JWT**
+**Autenticación y Autorización con JWT**
 
-- ? **Endpoint de Login** (p�bl�co, sin requiere JWT)
-  - Recibe: Email y Contrase�a
-  - Genera: JWT con expiraci�n de 1 hora
+- ✅ **Endpoint de Login** (público, sin requiere JWT)
+  - Recibe: Email y Contraseña
+  - Genera: JWT con expiración de 1 hora
   - Respuesta: Access Token, Refresh Token, Datos Usuario
 
-- ? **Autorizaci�n por Roles** (Administrador y Auxiliar de Registro)
+- ✅ **Autorización por Roles** (Administrador y Auxiliar de Registro)
   - Control de acceso a endpoints por rol
   - Validaciones de seguridad
 
-- ? **CORS Configurado** para consumo controlado de APIs
+- ✅ **CORS Configurado** para consumo controlado de APIs
 
-- ? **Entity Framework ORM** para gesti�n de entidades
+- ✅ **Entity Framework ORM** para gestión de entidades
 
-**Tecnolog�a**: JWT Bearer, BCrypt, Roles RBAC
+**Tecnología**: JWT Bearer, BCrypt, Roles RBAC
 
 ```bash
 POST /api/auth/login
@@ -66,20 +66,20 @@ Content-Type: application/json
 ---
 
 ### RETO 06: Web API - Listas de Valores
-**Endpoint de Municipios con Cach� en Memoria**
+**Endpoint de Municipios con Caché en Memoria**
 
-- ? **Endpoint para Municipios** (privado, requiere JWT)
+- ✅ **Endpoint para Municipios** (privado, requiere JWT)
   - Retorna lista de municipios para CRUD de Comerciantes
-  - Paginaci�n: 5 registros por p�gina por defecto
-  - Campos: Id, Nombre, C�digo, Departamento
+  - Paginación: 5 registros por página por defecto
+  - Campos: Id, Nombre, Código, Departamento
 
-- ? **Cach� en Memoria** (Opcional) para evitar accesos a BD
+- ✅ **Caché en Memoria** (Opcional) para evitar accesos a BD
 
-- ? **Estandarizaci�n de respuestas HTTP** de endpoints
+- ✅ **Estandarización de respuestas HTTP** de endpoints
 
-- ? **Entity Framework ORM** para mapeo de datos
+- ✅ **Entity Framework ORM** para mapeo de datos
 
-**Tecnolog�a**: Memory Cache, IMemoryCache, EF Core
+**Tecnología**: Memory Cache, IMemoryCache, EF Core
 
 ```bash
 GET /api/municipalities?pageNumber=1&pageSize=5
@@ -91,33 +91,33 @@ Authorization: Bearer {token}
 ---
 
 ### RETO 07: Web API - CRUD Comerciante
-**Gesti�n Completa de Comerciantes**
+**Gestión Completa de Comerciantes**
 
-- ? **Endpoints CRUD Completos**:
+- ✅ **Endpoints CRUD Completos**:
   - **GET** (Paginado): Listar comerciantes con filtros
-  - **GET by Id**: Obtener comerciante espec�fico
+  - **GET by Id**: Obtener comerciante específico
   - **POST**: Crear nuevo comerciante
   - **PUT**: Actualizar comerciante
   - **PATCH**: Cambiar estado (Activo/Inactivo) - Solo Administrador
   - **DELETE**: Eliminar comerciante - Solo Administrador
 
-- ? **Filtrado y B�squeda**:
-  - Por Nombre o Raz�n Social
+- ✅ **Filtrado y Búsqueda**:
+  - Por Nombre o Razón Social
   - Por Fecha de Registro
   - Por Estado (Activo/Inactivo)
 
-- ? **Auditor�a Autom�tica**:
-  - Campos `UpdatedAt` y `UpdatedBy` se actualizan autom�ticamente
+- ✅ **Auditoría Automática**:
+  - Campos `UpdatedAt` y `UpdatedBy` se actualizan automáticamente
   - Base de datos calcula con triggers
 
-- ? **Validaciones de Datos**:
+- ✅ **Validaciones de Datos**:
   - Tipos de datos, obligatoriedad
-  - Email v�lido
-  - Tel�fono formateado
+  - Email válido
+  - Teléfono formateado
 
-- ? **Entity Framework ORM** para gesti�n de entidades
+- ✅ **Entity Framework ORM** para gestión de entidades
 
-**Tecnolog�a**: Repositories, DTOs, AutoMapper, EF Core
+**Tecnología**: Repositories, DTOs, AutoMapper, EF Core
 
 ```bash
 # Listar paginado
@@ -147,28 +147,28 @@ Content-Type: application/json
 ---
 
 ### RETO 08: Web API - Reporte Comerciantes
-**Generaci�n de Archivo CSV con Reportes**
+**Generación de Archivo CSV con Reportes**
 
-- ? **Endpoint de Reporte** (privado, Solo Administrador)
-  - Genera archivo **CSV plano** con informaci�n de comerciantes activos
+- ✅ **Endpoint de Reporte** (privado, Solo Administrador)
+  - Genera archivo **CSV plano** con información de comerciantes activos
   - Incluye datos agregados de establecimientos
 
-- ? **Estructura del CSV**:
+- ✅ **Estructura del CSV**:
   ```
-  Nombre|Municipio|Tel�fono|Correo|Fecha Registro|Estado|Cantidad Establecimientos|Total Ingresos|Cantidad Empleados
-  Empresa 1|Bogot�|+573001234567|empresa1@example.com|2025-01-15|Activo|3|450000.50|75
+  Nombre|Municipio|Teléfono|Correo|Fecha Registro|Estado|Cantidad Establecimientos|Total Ingresos|Cantidad Empleados
+  Empresa 1|Bogotá|+573001234567|empresa1@example.com|2025-01-15|Activo|3|450000.50|75
   ```
 
-- ? **C�lculos Agregados**:
+- ✅ **Cálculos Agregados**:
   - Cantidad de Establecimientos (por comerciante)
   - Total Ingresos (suma de Revenue de establecimientos)
   - Cantidad de Empleados (suma de EmployeeCount)
 
-- ? **Usa Funci�n SQL** creada en el Reto 4 (fn_GetActiveMerchantsReport)
+- ✅ **Usa Función SQL** creada en el Reto 4 (fn_GetActiveMerchantsReport)
 
-- ? **Estandarizaci�n de Respuestas HTTP**
+- ✅ **Estandarización de Respuestas HTTP**
 
-**Tecnolog�a**: SQL Functions, LINQ, Streaming CSV
+**Tecnología**: SQL Functions, LINQ, Streaming CSV
 
 ```bash
 # Descargar reporte CSV
@@ -182,36 +182,36 @@ Content-Disposition: attachment; filename="merchants-report.csv"
 
 ---
 
-## ??? Base de Datos
+## 🗄️ Base de Datos
 
-Se utiliz� una base de datos SQL Server con **8 tablas relacionadas** que soportan la soluci�n:
+Se utilizó una base de datos SQL Server con **8 tablas relacionadas** que soportan la solución:
 
 ### Tablas Principales para esta Prueba
 
-| Tabla | Prop�sito | Relaci�n |
+| Tabla | Propósito | Relación |
 |-------|-----------|----------|
-| **Users** | Autenticaci�n y autorizaci�n | PK: UNIQUEIDENTIFIER |
-| **Roles** | Cat�logo de roles (Administrador, Auxiliar) | 1:N con Users |
+| **Users** | Autenticación y autorización | PK: UNIQUEIDENTIFIER |
+| **Roles** | Catálogo de roles (Administrador, Auxiliar) | 1:N con Users |
 | **Departments** | Departamentos de Colombia | 1:N con Municipalities |
 | **Municipalities** | Municipios agrupados por departamento | 1:N con Merchants |
 | **Merchants** | Comerciantes/Empresas | 1:N con Establishments |
 | **Establishments** | Sucursales/Establecimientos por comerciante | N:1 con Merchants |
-| **RefreshTokens** | Gesti�n de tokens de refresco | 1:N con Users |
-| **TokenBlacklist** | Revocaci�n de tokens | 1:N con Users |
+| **RefreshTokens** | Gestión de tokens de refresco | 1:N con Users |
+| **TokenBlacklist** | Revocación de tokens | 1:N con Users |
 
-### Ejecuci�n de Scripts BD
+### Ejecución de Scripts BD
 
-**?? Importante**: Los scripts deben ejecutarse en orden:
+**⚠️ Importante**: Los scripts deben ejecutarse en orden:
 
-1. **`1_Schema.sql`** - Crea las tablas, �ndices, triggers y funci�n de reporte
+1. **`1_Schema.sql`** - Crea las tablas, índices, triggers y función de reporte
 2. **`2_Insert_Seed_Data.sql`** - Inserta datos de prueba (5 departamentos, 5 municipios, 2 usuarios, 5 comerciantes, 10 establecimientos)
-3. **`3_Insert_Establishments.sql`** - Script adicional para m�s establecimientos (opcional)
+3. **`3_Insert_Establishments.sql`** - Script adicional para más establecimientos (opcional)
 
-**Documentaci�n completa**: Ver [Database/README.md](./Database/README.md)
+**Documentación completa**: Ver [Database/README.md](./Database/README.md)
 
 ---
 
-## ??? Arquitectura
+## 🏛️ Arquitectura
 
 **Hexagonal Architecture - 5 Proyectos Organizados en Capas:**
 
@@ -236,7 +236,7 @@ Se utiliz� una base de datos SQL Server con **8 tablas relacionadas** que soport
 ?     Infrastructure.csproj               ?
 ???????????????????????????????????????????
 
-Tests.csproj ? Pruebas automatizadas (58+)
+Tests.csproj - Pruebas automatizadas
 ```
 
 ### **Responsabilidades por Capa:**
@@ -251,7 +251,7 @@ Tests.csproj ? Pruebas automatizadas (58+)
 
 ---
 
-## ?? Requisitos
+## 💻 Requisitos
 
 - **.NET 8 SDK** ([descargar](https://dotnet.microsoft.com/download))
 - **SQL Server 2019+** o **SQL Server Express**
@@ -259,7 +259,7 @@ Tests.csproj ? Pruebas automatizadas (58+)
 
 ---
 
-## ?? Instalaci�n
+## 🔧 Instalación
 
 ### 1. Clonar el repositorio
 ```bash
@@ -274,14 +274,14 @@ dotnet restore
 
 ### 3. Configurar base de datos
 
-#### Opci�n A: Scripts SQL (Recomendado)
+#### Opción A: Scripts SQL (Recomendado)
 ```bash
 # Ejecutar en SQL Server Management Studio (SSMS):
 # 1. Abrir Database/1_Schema.sql y ejecutar (F5)
 # 2. Abrir Database/2_Insert_Seed_Data.sql y ejecutar (F5)
 ```
 
-#### Opci�n B: Entity Framework Migrations
+#### Opción B: Entity Framework Migrations
 ```bash
 dotnet ef database update --project Infrastructure --startup-project Api
 ```
@@ -312,18 +312,18 @@ cd Api
 dotnet run
 ```
 
-? **API disponible en**: `https://localhost:7085`  
-? **Swagger UI en**: `https://localhost:7085/swagger`
+✅ **API disponible en**: `https://localhost:7085`  
+✅ **Swagger UI en**: `https://localhost:7085/swagger`
 
 ---
 
-## ?? Configuraci�n
+## ⚙️ Configuración
 
 ### Usuarios de Prueba
 
-Despu�s de ejecutar los scripts SQL, tienes 2 usuarios disponibles:
+Después de ejecutar los scripts SQL, tienes 2 usuarios disponibles:
 
-| Usuario | Contrase�a | Rol | Email |
+| Usuario | Contraseña | Rol | Email |
 |---------|-----------|-----|-------|
 | **admin** | Admin123! | Administrador | admin@commerce-api.com |
 | **auxiliar** | Admin123! | Auxiliar de Registro | auxiliar@commerce-api.com |
@@ -335,7 +335,7 @@ Despu�s de ejecutar los scripts SQL, tienes 2 usuarios disponibles:
   "Issuer": "CommerceApiDotNet",
   "Audience": "CommerceApiDotNet-Users",
   "AccessTokenExpiration": "60",        // Minutos
-  "RefreshTokenExpiration": "7"         // D�as
+  "RefreshTokenExpiration": "7"         // Días
 }
 ```
 
@@ -352,43 +352,43 @@ Despu�s de ejecutar los scripts SQL, tienes 2 usuarios disponibles:
 
 ---
 
-## ?? API Endpoints
+## 📡 API Endpoints
 
-### Autenticaci�n (RETO 05)
+### Autenticación (RETO 05)
 
-| M�todo | Endpoint | Descripci�n | Auth |
+| Método | Endpoint | Descripción | Auth |
 |--------|----------|---|---|
-| POST | `/api/auth/login` | Login con email y contrase�a | ? |
-| POST | `/api/auth/logout` | Cerrar sesi�n | ? |
-| POST | `/api/auth/refresh-token` | Renovar access token | ? |
+| POST | `/api/auth/login` | Login con email y contraseña | ❌ |
+| POST | `/api/auth/logout` | Cerrar sesión | ✅ |
+| POST | `/api/auth/refresh-token` | Renovar access token | ❌ |
 
 ### Municipios - Listas de Valores (RETO 06)
 
-| M�todo | Endpoint | Descripci�n | Auth |
+| Método | Endpoint | Descripción | Auth |
 |--------|----------|---|---|
-| GET | `/api/municipalities` | Listar municipios (paginado) | ? |
-| GET | `/api/municipalities?pageNumber=1&pageSize=5` | Con paginaci�n | ? |
+| GET | `/api/municipalities` | Listar municipios (paginado) | ✅ |
+| GET | `/api/municipalities?pageNumber=1&pageSize=5` | Con paginación | ✅ |
 
 ### Comerciantes - CRUD (RETO 07)
 
-| M�todo | Endpoint | Descripci�n | Auth | Rol |
+| Método | Endpoint | Descripción | Auth | Rol |
 |--------|----------|---|---|---|
-| GET | `/api/merchants` | Listar (paginado) | ? | Cualquiera |
-| GET | `/api/merchants/{id}` | Obtener por ID | ? | Cualquiera |
-| POST | `/api/merchants` | Crear | ? | Auxiliar+ |
-| PUT | `/api/merchants/{id}` | Actualizar | ? | Auxiliar+ |
-| PATCH | `/api/merchants/{id}/status` | Cambiar estado | ? | Admin |
-| DELETE | `/api/merchants/{id}` | Eliminar | ? | Admin |
+| GET | `/api/merchants` | Listar (paginado) | ✅ | Cualquiera |
+| GET | `/api/merchants/{id}` | Obtener por ID | ✅ | Cualquiera |
+| POST | `/api/merchants` | Crear | ✅ | Auxiliar+ |
+| PUT | `/api/merchants/{id}` | Actualizar | ✅ | Auxiliar+ |
+| PATCH | `/api/merchants/{id}/status` | Cambiar estado | ✅ | Admin |
+| DELETE | `/api/merchants/{id}` | Eliminar | ✅ | Admin |
 
 ### Reporte Comerciantes - CSV (RETO 08)
 
-| M�todo | Endpoint | Descripci�n | Auth | Rol |
+| Método | Endpoint | Descripción | Auth | Rol |
 |--------|----------|---|---|---|
-| GET | `/api/merchants/export/csv` | Descargar CSV | ? | Admin |
+| GET | `/api/merchants/export/csv` | Descargar CSV | ✅ | Admin |
 
 ---
 
-## ?? Ejemplos de Uso
+## 📡 Ejemplos de Uso
 
 ### 1. Login (RETO 05)
 ```bash
@@ -424,8 +424,8 @@ curl https://localhost:7085/api/municipalities?pageNumber=1&pageSize=5 \
 {
   "success": true,
   "data": [
-    { "id": 1, "name": "BOGOT�", "code": "25001", "department": "CUNDINAMARCA" },
-    { "id": 2, "name": "MEDELL�N", "code": "05001", "department": "ANTIOQUIA" }
+    { "id": 1, "name": "BOGOTA", "code": "25001", "department": "CUNDINAMARCA" },
+    { "id": 2, "name": "MEDELLIN", "code": "05001", "department": "ANTIOQUIA" }
   ],
   "pagination": {
     "pageNumber": 1,
@@ -462,19 +462,19 @@ curl https://localhost:7085/api/merchants/export/csv \
   --output merchants-report.csv
 
 # Archivo CSV con estructura:
-# Nombre|Municipio|Tel�fono|Correo|Fecha Registro|Estado|Cantidad Establecimientos|Total Ingresos|Cantidad Empleados
+# Nombre|Municipio|Telefono|Correo|Fecha Registro|Estado|Cantidad Establecimientos|Total Ingresos|Cantidad Empleados
 ```
 
 ---
 
-## ?? Pruebas
+## 🧪 Pruebas
 
 ### Ejecutar todas las pruebas
 ```bash
 dotnet test
 ```
 
-### Pruebas espec�ficas
+### Pruebas específicas
 ```bash
 dotnet test --filter "AuthServiceTests"
 dotnet test --filter "MerchantsControllerTests"
@@ -482,80 +482,80 @@ dotnet test --filter "MerchantsControllerTests"
 
 ---
 
-## ?? Estructura del Proyecto
+## 📁 Estructura del Proyecto
 
 ```
 CommerceApiDotNet/
-??? Domain/                          # Entidades
-?   ??? Entities/
-?   ?   ??? User.cs
-?   ?   ??? Merchant.cs
-?   ?   ??? Establishment.cs
-?   ?   ??? Municipality.cs
-?   ?   ??? Department.cs
-?   ??? Domain.csproj
-?
-??? Application/                     # Servicios y DTOs
-?   ??? Services/
-?   ?   ??? AuthService.cs
-?   ?   ??? MerchantService.cs
-?   ?   ??? MunicipalityService.cs
-?   ??? Ports/
-?   ?   ??? IAuthService.cs
-?   ?   ??? IMerchantService.cs
-?   ?   ??? IMunicipalityService.cs
-?   ??? DTOs/
-?   ?   ??? Auth/ (LoginRequestDTO, LoginResponseDTO)
-?   ?   ??? Merchant/ (MerchantDTO, CreateMerchantDTO, UpdateMerchantDTO)
-?   ??? Application.csproj
-?
-??? Infrastructure/                  # BD, Repositorios
-?   ??? Persistence/
-?   ?   ??? AppDbContext.cs
-?   ?   ??? Repositories/
-?   ?       ??? UserRepository.cs
-?   ?       ??? MerchantRepository.cs
-?   ?       ??? MunicipalityRepository.cs
-?   ??? Mapping/
-?   ?   ??? AutoMapperProfile.cs
-?   ??? Infrastructure.csproj
-?
-??? Api/                             # Controllers, Middleware
-?   ??? Controllers/
-?   ?   ??? AuthController.cs        # RETO 05
-?   ?   ??? MerchantsController.cs   # RETO 07, 08
-?   ?   ??? MunicipalitiesController.cs # RETO 06
-?   ??? Program.cs
-?   ??? appsettings.json
-?   ??? Api.csproj
-?
-??? Tests/                           # Pruebas automatizadas
-?   ??? Application/Services/
-?   ??? Api/Controllers/
-?   ??? Tests.csproj
-?
-??? Database/                        # Scripts SQL
-?   ??? 1_Schema.sql                 # Creaci�n de tablas
-?   ??? 2_Insert_Seed_Data.sql       # Datos iniciales
-?   ??? 3_Insert_Establishments.sql  # Datos adicionales (opcional)
-?   ??? README.md                    # Documentaci�n BD
-?
-??? CommerceApiDotNet.sln
+├── Domain/                          # Entidades
+│   ├── Entities/
+│   │   ├── User.cs
+│   │   ├── Merchant.cs
+│   │   ├── Establishment.cs
+│   │   ├── Municipality.cs
+│   │   └── Department.cs
+│   └── Domain.csproj
+│
+├── Application/                     # Servicios y DTOs
+│   ├── Services/
+│   │   ├── AuthService.cs
+│   │   ├── MerchantService.cs
+│   │   └── MunicipalityService.cs
+│   ├── Ports/
+│   │   ├── IAuthService.cs
+│   │   ├── IMerchantService.cs
+│   │   └── IMunicipalityService.cs
+│   ├── DTOs/
+│   │   ├── Auth/ (LoginRequestDTO, LoginResponseDTO)
+│   │   └── Merchant/ (MerchantDTO, CreateMerchantDTO, UpdateMerchantDTO)
+│   └── Application.csproj
+│
+├── Infrastructure/                  # BD, Repositorios
+│   ├── Persistence/
+│   │   ├── AppDbContext.cs
+│   │   └── Repositories/
+│   │       ├── UserRepository.cs
+│   │       ├── MerchantRepository.cs
+│   │       └── MunicipalityRepository.cs
+│   ├── Mapping/
+│   │   └── AutoMapperProfile.cs
+│   └── Infrastructure.csproj
+│
+├── Api/                             # Controllers, Middleware
+│   ├── Controllers/
+│   │   ├── AuthController.cs        # RETO 05
+│   │   ├── MerchantsController.cs   # RETO 07, 08
+│   │   └── MunicipalitiesController.cs # RETO 06
+│   ├── Program.cs
+│   ├── appsettings.json
+│   └── Api.csproj
+│
+├── Tests/                           # Pruebas automatizadas
+│   ├── Application/Services/
+│   ├── Api/Controllers/
+│   └── Tests.csproj
+│
+├── Database/                        # Scripts SQL
+│   ├── 1_Schema.sql                 # Creacion de tablas
+│   ├── 2_Insert_Seed_Data.sql       # Datos iniciales
+│   ├── 3_Insert_Establishments.sql  # Datos adicionales (opcional)
+│   └── README.md                    # Documentacion BD
+│
+└── CommerceApiDotNet.sln
 ```
 
 ---
 
-## ?? Resumen de Implementaci�n
+## 🚀 Resumen de Implementación
 
-| Reto | Funcionalidad | Estado | Tecnolog�a |
+| Reto | Funcionalidad | Estado | Tecnología |
 |------|---------------|--------|-----------|
-| **RETO 05** | Login + JWT + Roles | ? Completo | JWT Bearer, BCrypt, RBAC |
-| **RETO 06** | Endpoint Municipios + Cach� | ? Completo | IMemoryCache, EF Core |
-| **RETO 07** | CRUD Comerciantes | ? Completo | Repositories, DTOs, AutoMapper |
-| **RETO 08** | Reporte CSV | ? Completo | SQL Functions, LINQ, Streaming |
+| **RETO 05** | Login + JWT + Roles | ✅ Completo | JWT Bearer, BCrypt, RBAC |
+| **RETO 06** | Endpoint Municipios + Cache | ✅ Completo | IMemoryCache, EF Core |
+| **RETO 07** | CRUD Comerciantes | ✅ Completo | Repositories, DTOs, AutoMapper |
+| **RETO 08** | Reporte CSV | ✅ Completo | SQL Functions, LINQ, Streaming |
 
 ---
 
-**Creado con ??? usando .NET 8, Arquitectura Hexagonal y SQL Server**
+**Creado con 🛠️ usando .NET 8, Arquitectura Hexagonal y SQL Server**
 
-*�ltima actualizaci�n: 2025*
+*Última actualización: 20265*
