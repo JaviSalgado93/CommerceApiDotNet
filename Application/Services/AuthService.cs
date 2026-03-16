@@ -330,7 +330,7 @@ namespace Application.Services
                 throw new InvalidOperationException("Access token cannot be empty");
 
             var tokenHash = HashToken(accessToken);
-            await _tokenBlacklistRepository.AddTokenAsync(userId, tokenHash, DateTime.UtcNow.AddMinutes(GetAccessTokenExpirationMinutes()));
+            await _tokenBlacklistRepository.AddTokenAsync(userId, tokenHash, DateTime.UtcNow.AddMinutes(GetAccessTokenExpirationMinutes()), "access_token_revocation");
             _logger.LogInformation("Access token revoked for user: {UserId}", userId);
         }
 
@@ -433,6 +433,17 @@ namespace Application.Services
 
             await _userRepository.UpdateAsync(user);
             _logger.LogInformation("User profile updated: {UserId}", userId);
+
+            // Send profile updated notification email
+            try
+            {
+                await _emailService.SendProfileUpdatedNotificationAsync(user.Email, user.Username);
+                _logger.LogInformation("Profile updated notification sent to: {Email} (UserId: {UserId})", user.Email, user.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send profile updated notification to: {Email} (UserId: {UserId})", user.Email, user.Id);
+            }
         }
 
         /// <summary>
@@ -458,6 +469,17 @@ namespace Application.Services
 
             await _userRepository.UpdateAsync(user);
             _logger.LogInformation("Password changed successfully: {UserId}", userId);
+
+            // Send password changed notification email
+            try
+            {
+                await _emailService.SendPasswordChangedNotificationAsync(user.Email, user.Username);
+                _logger.LogInformation("Password changed notification sent to: {Email} (UserId: {UserId})", user.Email, user.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send password changed notification to: {Email} (UserId: {UserId})", user.Email, user.Id);
+            }
         }
 
         /// <summary>
@@ -544,6 +566,17 @@ namespace Application.Services
             await _userRepository.UpdateAsync(user);
 
             await RevokeAllTokensAsync(userId);
+
+            // Send account deleted notification email
+            try
+            {
+                await _emailService.SendAccountDeletedNotificationAsync(user.Email, user.Username);
+                _logger.LogInformation("Account deleted notification sent to: {Email} (UserId: {UserId})", user.Email, user.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send account deleted notification to: {Email} (UserId: {UserId})", user.Email, user.Id);
+            }
 
             _logger.LogInformation("User deactivated: {UserId}", userId);
         }

@@ -176,12 +176,17 @@ namespace Infrastructure.Persistence.Repositories
 
                 // Actualizar campos
                 existing.Name = merchant.Name;
-                existing.Municipality = merchant.Municipality;
                 existing.Phone = merchant.Phone;
                 existing.Email = merchant.Email;
                 existing.Status = merchant.Status;
                 existing.UpdatedAt = DateTime.UtcNow;
                 existing.UpdatedBy = merchant.UpdatedBy;
+                
+                // Solo actualizar Municipality si se proporciona
+                if (merchant.Municipality != null)
+                {
+                    existing.Municipality = merchant.Municipality;
+                }
 
                 _context.Merchants.Update(existing);
                 await _context.SaveChangesAsync(cancellationToken);

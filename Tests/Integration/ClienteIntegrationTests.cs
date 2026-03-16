@@ -56,8 +56,8 @@ public class ClienteIntegrationTests : IClassFixture<WebApplicationFactory<Progr
     /// Resultado esperado: HTTP 401 (Unauthorized)
     /// 
     /// Escenario real (end-to-end):
-    /// 1. Cliente HTTP hace GET /api/cliente (sin bearer token)
-    /// 2. Llega a ClienteController
+    /// 1. Cliente HTTP hace GET /api/merchants (sin bearer token)
+    /// 2. Llega a MerchantsController
     /// 3. Middleware de autenticación valida JWT
     /// 4. No hay JWT válido: rechaza con HTTP 401
     /// 5. La respuesta nunca llega al servicio de negocio
@@ -66,10 +66,10 @@ public class ClienteIntegrationTests : IClassFixture<WebApplicationFactory<Progr
     /// están protegidos y no permiten acceso anónimo
     /// </summary>
     [Fact]
-    public async Task GetClientes_WithoutAuth_ShouldReturnUnauthorized()
+    public async Task GetMerchants_WithoutAuth_ShouldReturnUnauthorized()
     {
         // Act: Hacer GET sin token JWT
-        var response = await _client.GetAsync("/api/cliente");
+        var response = await _client.GetAsync("/api/merchants");
 
         // Assert: Verificar que retorna HTTP 401
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.Unauthorized);
