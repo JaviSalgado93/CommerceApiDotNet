@@ -1,10 +1,13 @@
-﻿using Application.Ports;
-using Infrastructure.Persistence.Repositories;
+﻿using Application.DTOs.Merchants;
+using Application.Ports;
 using Application.Services;
-using Infrastructure.Services;
-using RazorLight;
+using Application.Validators.Merchants;
+using FluentValidation;
 using Infrastructure.Configuration;
 using Infrastructure.Helpers;
+using Infrastructure.Persistence.Repositories;
+using Infrastructure.Services;
+using RazorLight;
 
 namespace Api.Middleware
 {
@@ -26,10 +29,13 @@ namespace Api.Middleware
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
             services.AddScoped<ITokenBlacklistRepository, TokenBlacklistRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();            
+            services.AddScoped<IMerchantRepository, MerchantRepository>(); // (Merchants)
 
             // Registro de Servicios de Aplicación
             services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IPasswordPolicyService, PasswordPolicyService>();
+            services.AddScoped<IPasswordPolicyService, PasswordPolicyService>();            
+            services.AddScoped<IMerchantService, MerchantService>(); // (Merchants)
 
             // Registro de Servicios de Infraestructura
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
@@ -72,6 +78,10 @@ namespace Api.Middleware
                 logger.LogInformation("RazorLight engine initialized successfully");
                 return engine;
             });
+
+            // Registro de Validadores
+            services.AddScoped<IValidator<CreateMerchantDto>, CreateMerchantValidator>();
+            services.AddScoped<IValidator<UpdateMerchantDto>, UpdateMerchantValidator>();
         }
     }
 }

@@ -254,10 +254,7 @@ public class Program
             // Dependency Injection
             Log.Information("Registering application dependencies...");
             builder.Services.RegisterDependencies();
-            Log.Information("Application dependencies registered successfully");
-
-            // Role Repository
-            builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+            Log.Information("Application dependencies registered successfully");            
 
             // AutoMapper configuration
             builder.Services.AddAutoMapper(typeof(Infrastructure.Mapping.AutoMapperProfile));

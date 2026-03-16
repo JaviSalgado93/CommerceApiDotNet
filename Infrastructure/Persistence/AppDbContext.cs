@@ -20,6 +20,8 @@ namespace Infrastructure.Persistence
         public DbSet<RefreshTokenEntity> RefreshTokens { get; set; }
         public DbSet<PasswordResetTokenEntity> PasswordResetTokens { get; set; }
         public DbSet<TokenBlacklistEntity> TokenBlacklist { get; set; }
+        public DbSet<Merchant> Merchants { get; set; }
+        public DbSet<Establishment> Establishments { get; set; }
         #endregion
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -120,6 +122,39 @@ namespace Infrastructure.Persistence
                 .WithMany()
                 .HasForeignKey(tb => tb.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Merchants
+            modelBuilder.Entity<Merchant>()
+                .HasKey(m => m.Id);
+
+            modelBuilder.Entity<Merchant>()
+                .Property(m => m.Id)
+                .ValueGeneratedOnAdd(); // Identity (auto-increment)
+
+            modelBuilder.Entity<Merchant>()
+                .HasIndex(m => m.Email)
+                .IsUnique()
+                .HasFilter("[Email] IS NOT NULL"); // Permite múltiples NULLs
+
+            modelBuilder.Entity<Merchant>()
+                .HasOne(m => m.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(m => m.CreatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Establishments
+            modelBuilder.Entity<Establishment>()
+                .HasKey(e => e.Id);
+
+            modelBuilder.Entity<Establishment>()
+                .Property(e => e.Id)
+                .ValueGeneratedOnAdd(); // Identity (auto-increment)
+
+            modelBuilder.Entity<Establishment>()
+                .HasOne(e => e.Merchant)
+                .WithMany(m => m.Establishments)
+                .HasForeignKey(e => e.MerchantId)
+                .OnDelete(DeleteBehavior.Cascade); // Si se borra Merchant, se borran Establishments
         }
     }
 }

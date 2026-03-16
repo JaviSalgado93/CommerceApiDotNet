@@ -21,7 +21,7 @@ namespace Infrastructure.Mapping
             CreateMap<RefreshToken, RefreshTokenEntity>().ReverseMap();
 
             // PasswordResetToken mappings
-            CreateMap<PasswordResetToken, PasswordResetTokenEntity>().ReverseMap();
+            CreateMap<PasswordResetToken, PasswordResetTokenEntity>().ReverseMap();            
         }
     }
 }
